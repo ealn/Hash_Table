@@ -41,15 +41,16 @@ int main(void)
     if (ret == SUCCESS)
     {
         ret = showGui();
-        //destroyTable();
+        destroyTable();
     }
     else
     {
         MAIN_ERROR("main ERROR - Hash table could not be created\n");
     }
+    
+    MAIN_WARNING("main WARNING - program ended with rc= %d\n", ret);
+    
     termTrace();
-
-    MAIN_WARNING("main WARNING - program ended with rc= %d", ret);
     
     return ret;
 }

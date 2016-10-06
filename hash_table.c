@@ -104,10 +104,11 @@ static void freeRegister(Register *pRegister)
 {
     if (pRegister != NULL)
     {
-        if (pRegister->tree != NULL)
-        {
-            destroyTree(pRegister->tree);
-        }
+        // TODO: free registers in the tree
+        //if (pRegister->tree != NULL)
+        //{
+        //    destroyTree(pRegister->tree);
+        //}
         
         MEMFREE((void *)pRegister);
     }
@@ -123,13 +124,14 @@ static void freeTable(void)
     {
         int index = 0;
         
-        // free registers
-        while (index < g_hashTable->size)
-        {
-            freeRegister(getRegisterAtIndex(index));
-            index++;
-        }
+        // TODO: free registers in the tree
+        //while (index < g_hashTable->size)
+        //{
+        //    freeRegister(getRegisterAtIndex(index));
+        //    index++;
+        //}
         
+        MEMFREE((void *)g_hashTable->registers);
         MEMFREE((void *)g_hashTable);
         g_hashTable = NULL; 
     }
@@ -199,14 +201,14 @@ void destroyTable(void)
 
 void displayTable(void)
 {
-    //TODO
+    //TODO: Search register into hash table
 }
 
 int insertReg(long ID, char *name, char *tel, char *address, char *city)
 {
     int ret = SUCCESS;
     
-    //TODO
+    //TODO: Insert register into hash table
     
     return ret;
 }
