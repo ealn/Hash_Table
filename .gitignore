@@ -1,0 +1,6 @@
+# Ignora todos los siguientes ficheros
+*.dev
+*.exe
+*.layout
+*.o
+*.win
