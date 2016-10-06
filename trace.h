@@ -11,11 +11,26 @@
 extern "C" {
 #endif
 
-//Constants:
-#define ERROR_VERBOSE    0
-#define WARNING_VERBOSE  1
-#define STATUS_VERBOSE   2
-#define INFO_VERBOSE     3
+void traceData(const char *pStr, ...);
+void initTrace(void);
+void termTrace(void);
+
+//Macros:
+#define MEM_ERROR            traceData
+#define MEM_WARNING          traceData
+#define MEM_DEBUG            traceData
+
+#define HASHTAB_ERROR        traceData
+#define HASHTAB_WARNING      traceData
+#define HASHTAB_DEBUG        traceData
+
+#define TREE_ERROR           traceData
+#define TREE_WARNING         traceData
+#define TREE_DEBUG           traceData
+
+#define MAIN_ERROR           traceData
+#define MAIN_WARNING         traceData
+#define MAIN_DEBUG           traceData
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

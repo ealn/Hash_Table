@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "hash_table.h"
+#include "trace.h"
 
 // Macros to select the OS used
 #define WINDOWS
@@ -34,6 +35,7 @@ int main(void)
 {
     int ret;
     
+    initTrace();
     ret = createTable();
     
     if (ret == SUCCESS)
@@ -43,8 +45,11 @@ int main(void)
     }
     else
     {
-        printf("Error creating the Hash table\n");
+        MAIN_ERROR("main ERROR - Hash table could not be created\n");
     }
+    termTrace();
+
+    MAIN_WARNING("main WARNING - program ended with rc= %d", ret);
     
     return ret;
 }

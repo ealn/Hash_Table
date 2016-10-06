@@ -12,6 +12,7 @@
 #include "hash_table.h"
 #include "memutils.h"
 #include "tree.h"
+#include "trace.h"
 
 //Constants
 #define NUMBER_OF_REG       30
@@ -58,7 +59,7 @@ static Register * allocRegisters(int numberOfReg)
     
        if (reg == NULL)
        {
-          printf("Error allocating %i Registers", numberOfReg);
+          HASHTAB_ERROR("allocRegisters ERROR - allocating %i Registers\n", numberOfReg);
        }
     }
     
@@ -76,7 +77,7 @@ static void allocTable(int numberOfReg)
     }
     else
     {
-        printf("Error allocating hash table");
+        HASHTAB_ERROR("allocTable ERROR - allocating hash table\n");
     }
 }
 
@@ -92,7 +93,7 @@ static Register * reallocRegisters(Register * ptrOrigReg, int origNumberOfReg, i
     
        if (reg == NULL)
        {
-          printf("Error allocating %i Registers", newNumberOfReg);
+          HASHTAB_ERROR("reallocRegisters ERROR - allocating %i Registers\n", newNumberOfReg);
        }
     }
     
@@ -112,7 +113,7 @@ static void freeRegister(Register *pRegister)
     }
     else
     {
-        printf("Error releasing register");
+        HASHTAB_WARNING("freeRegister WARNING - register is null\n");
     }
 }
 
@@ -134,7 +135,7 @@ static void freeTable(void)
     }
     else
     {
-        printf("Error releasing Table");
+        HASHTAB_WARNING("freeTable WARNING - hash table is null\n");
     }
 }
 

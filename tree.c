@@ -12,6 +12,7 @@
 #include "tree.h"
 #include "hash_table.h"
 #include "memutils.h"
+#include "trace.h"
 
 //Defines
 #define NODE_SIZE sizeof(Node)
@@ -38,7 +39,7 @@ static Node * allocNode(void)
     
     if (pNode == NULL)
     {
-        printf("Error allocating a node");
+        TREE_ERROR("allocNode ERROR - Node could not be allocated\n");
     }
     
     return pNode;
@@ -52,7 +53,7 @@ static void freeNode(Node *pNode)
     }
     else
     {
-        printf("Error releasing a node");
+        TREE_WARNING("freeNode WARNING - Node is null\n");
     }
 }
 
@@ -132,13 +133,13 @@ int createTree(Register *baseReg, Register *newReg)
             else
             {
                 ret = FAIL;
-                printf("Error the new node cannot be created");
+                TREE_ERROR("createTree ERROR - the new node could not be created\n");
             }
         }
         else
         {
             ret = FAIL;
-            printf("Error the top node cannot be created");
+            TREE_ERROR("createTree ERROR - the top node cannot be created\n");
         }
     }
     
