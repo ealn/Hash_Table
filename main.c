@@ -33,7 +33,7 @@ static int showTable(void);
 
 int main(void)
 {
-    int ret;
+    int ret = SUCCESS;
     
     initTrace();
     ret = createTable();
@@ -45,10 +45,10 @@ int main(void)
     }
     else
     {
-        MAIN_ERROR("main ERROR - Hash table could not be created\n");
+        MAIN_ERROR("main() Hash table could not be created\n");
     }
     
-    MAIN_WARNING("main WARNING - program ended with rc= %d\n", ret);
+    MAIN_DEBUG("main() program ended with rc= %d\n", ret);
     
     termTrace();
     
@@ -77,6 +77,8 @@ static int showGui(void)
         
         ret = showMainMenu(&optionSelected);
     
+        MAIN_DEBUG("showGui() optionSelected=%i\n", optionSelected);
+
         switch (optionSelected)
         {
             case INSERT_REG: ret = showRegMenu(INSERT_REG, &numberOfSteps);
@@ -192,6 +194,13 @@ static int showRegMenu(int action, int *numberOfSteps)
           fgets(tempValue, 256, stdin);
           memcpy(city, tempValue, sizeof(char)*CITY_SIZE);
           
+          MAIN_DEBUG("showRegMenu() InsertReg \nID: %d \nname: %stel: %saddress: %scity: %s\n",
+                     ID,
+                     name,
+                     tel,
+                     address,
+                     city);
+
           insertReg(ID, name, tel, address, city);
        }
        else if (action == SEARCH_REG)
@@ -201,6 +210,7 @@ static int showRegMenu(int action, int *numberOfSteps)
           fgets(tempValue, 200, stdin);
           ID = atoi(tempValue);
           
+          MAIN_DEBUG("showRegMenu() searchReg ID=%d\n", ID);
           ret = searchReg(ID, numberOfSteps);
        }
     }

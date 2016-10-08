@@ -11,26 +11,28 @@
 extern "C" {
 #endif
 
-void traceData(const char *pStr, ...);
+void traceDataError(const char *pParm, ...);
+void traceDataWarning(const char *pParm, ...);
+void traceDataDebug(const char *pParm, ...);
 void initTrace(void);
 void termTrace(void);
 
 //Macros:
-#define MEM_ERROR            traceData
-#define MEM_WARNING          traceData
-#define MEM_DEBUG            traceData
+#define MEM_ERROR            traceDataError
+#define MEM_WARNING          traceDataWarning
+#define MEM_DEBUG            traceDataDebug
 
-#define HASHTAB_ERROR        traceData
-#define HASHTAB_WARNING      traceData
-#define HASHTAB_DEBUG        traceData
+#define HASHTAB_ERROR        traceDataError
+#define HASHTAB_WARNING      traceDataWarning
+#define HASHTAB_DEBUG        traceDataDebug
 
-#define TREE_ERROR           traceData
-#define TREE_WARNING         traceData
-#define TREE_DEBUG           traceData
+#define TREE_ERROR           traceDataError
+#define TREE_WARNING         traceDataWarning
+#define TREE_DEBUG           traceDataDebug
 
-#define MAIN_ERROR           traceData
-#define MAIN_WARNING         traceData
-#define MAIN_DEBUG           traceData
+#define MAIN_ERROR           traceDataError
+#define MAIN_WARNING         traceDataWarning
+#define MAIN_DEBUG           traceDataDebug
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

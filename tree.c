@@ -39,7 +39,7 @@ static Node * allocNode(void)
     
     if (pNode == NULL)
     {
-        TREE_ERROR("allocNode ERROR - Node could not be allocated\n");
+        TREE_ERROR("allocNode() Node could not be allocated\n");
     }
     
     return pNode;
@@ -53,7 +53,7 @@ static void freeNode(Node *pNode)
     }
     else
     {
-        TREE_WARNING("freeNode WARNING - Node is null\n");
+        TREE_WARNING("freeNode() Node is null\n");
     }
 }
 
@@ -115,14 +115,14 @@ int createTree(Register *baseReg, Register *newReg)
         if (topTree == NULL)
         {
             //create top node of tree
-            topTree = createNode(baseReg);            
+            topTree = createNode(baseReg);
             setTreeToReg(baseReg, topTree);
         }
         
         if (topTree != NULL)
         {
             //create new node
-            newNode = createNode(newReg);            
+            newNode = createNode(newReg);
             setTreeToReg(newReg, newNode);
             
             if (newNode != NULL)
@@ -133,13 +133,13 @@ int createTree(Register *baseReg, Register *newReg)
             else
             {
                 ret = FAIL;
-                TREE_ERROR("createTree ERROR - the new node could not be created\n");
+                TREE_ERROR("createTree() the new node could not be created\n");
             }
         }
         else
         {
             ret = FAIL;
-            TREE_ERROR("createTree ERROR - the top node cannot be created\n");
+            TREE_ERROR("createTree() the top node cannot be created\n");
         }
     }
     

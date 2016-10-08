@@ -5,3 +5,8 @@
 *.o
 *.win
 *.txt
+*.vpj
+*.vpw
+*.vpwhist
+*.vtg
+Debug

@@ -59,7 +59,7 @@ static Register * allocRegisters(int numberOfReg)
     
        if (reg == NULL)
        {
-          HASHTAB_ERROR("allocRegisters ERROR - allocating %i Registers\n", numberOfReg);
+          HASHTAB_ERROR("allocRegisters() could not be allocated %i Registers\n", numberOfReg);
        }
     }
     
@@ -77,7 +77,7 @@ static void allocTable(int numberOfReg)
     }
     else
     {
-        HASHTAB_ERROR("allocTable ERROR - allocating hash table\n");
+        HASHTAB_ERROR("allocTable() could not be allocated the hash table\n");
     }
 }
 
@@ -93,7 +93,7 @@ static Register * reallocRegisters(Register * ptrOrigReg, int origNumberOfReg, i
     
        if (reg == NULL)
        {
-          HASHTAB_ERROR("reallocRegisters ERROR - allocating %i Registers\n", newNumberOfReg);
+          HASHTAB_ERROR("reallocRegisters() could not be allocated %i Registers\n", newNumberOfReg);
        }
     }
     
@@ -114,7 +114,7 @@ static void freeRegister(Register *pRegister)
     }
     else
     {
-        HASHTAB_WARNING("freeRegister WARNING - register is null\n");
+        HASHTAB_WARNING("freeRegister() register is null\n");
     }
 }
 
@@ -137,7 +137,7 @@ static void freeTable(void)
     }
     else
     {
-        HASHTAB_WARNING("freeTable WARNING - hash table is null\n");
+        HASHTAB_WARNING("freeTable() hash table is null\n");
     }
 }
 
