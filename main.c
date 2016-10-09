@@ -14,22 +14,24 @@
 #include "hash_table.h"
 #include "trace.h"
 
-// Macros to select the OS used
+// Macros to select the OS to be used
 #define WINDOWS
 //#define UNIX
 
 //Constanst
-#define INSERT_REG 1
-#define SEARCH_REG 2
-#define SHOW_TABLE 3
-#define EXIT       4
+#define INSERT_REG       1
+#define SEARCH_REG       2
+#define REMOVE_REG       3
+#define SHOW_TABLE       4
+#define EXIT             5
+#define STDIN_BUF_SIZE   256
 
 //Definition of static functions
 static void cleanScreen(void);
-static int showGui(void);
-static int showMainMenu(int *optionSelected);
-static int showRegMenu(int action, int *numberOfSteps);
-static int showTable(void);
+static int  showGui(void);
+static int  showMainMenu(int *optionSelected);
+static int  showRegMenu(int action, unsigned int *numberOfSteps);
+static int  showTable(void);
 
 int main(void)
 {
@@ -68,7 +70,7 @@ static int showGui(void)
 {
     int ret = SUCCESS;
     int optionSelected = 0;
-    int numberOfSteps = 0;
+    unsigned int numberOfSteps = 0;
     int loop = 0;
         
     do
@@ -85,6 +87,8 @@ static int showGui(void)
                 break;
             case SEARCH_REG: ret = showRegMenu(SEARCH_REG, &numberOfSteps);
                 break;
+            case REMOVE_REG: ret = showRegMenu(REMOVE_REG, &numberOfSteps);
+                break;
             case SHOW_TABLE: ret = showTable();
                 break;
             default: break;
@@ -92,18 +96,18 @@ static int showGui(void)
         
         if (optionSelected != EXIT)
         {
-            char tempValue[256];
+            char stdinBuf[STDIN_BUF_SIZE];
             char repeat;
     
-            memset(&tempValue, 0, sizeof(char)*256);
+            memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
     
             printf("Deseas realizar otra operacion [s,n]: ");
-            fgets(tempValue, 256, stdin);
+            fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
             
-            repeat = tempValue[0];
+            repeat = stdinBuf[0];
 
             if ((repeat == 's' || repeat == 'S')
-                && strlen(tempValue) == 2)   //2 characters = 1 character + \0 null termininator
+                && strlen(stdinBuf) == 2)   //2 characters = 1 character + \0 (null termininator)
             {
                 loop = 1;
                 cleanScreen();
@@ -121,9 +125,9 @@ static int showMainMenu(int *optionSelected)
     
     if (optionSelected != NULL)
     {
-        char tempValue[256];
+        char stdinBuf[STDIN_BUF_SIZE];
         
-        memset(&tempValue, 0, sizeof(char)*256);
+        memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
         
         do 
         {
@@ -134,15 +138,15 @@ static int showMainMenu(int *optionSelected)
           printf("3.- Mostrar la hash table\n");
           printf("4.- Salir\n\n");
           printf("Opcion Seleccionada: ");
-          fgets(tempValue, 256, stdin);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
           
-          *optionSelected = atoi(tempValue);
+          *optionSelected = atoi(stdinBuf);
            
-          if (*optionSelected < 1 || *optionSelected > 4)
+          if (*optionSelected < INSERT_REG || *optionSelected > EXIT)
           {
               cleanScreen();
           }
-        }while (*optionSelected < 1 || *optionSelected > 4);
+        }while (*optionSelected < INSERT_REG || *optionSelected > EXIT);
     }
     else
     {
@@ -152,16 +156,16 @@ static int showMainMenu(int *optionSelected)
     return ret;
 }
 
-static int showRegMenu(int action, int *numberOfSteps)
+static int showRegMenu(int action, unsigned int *numberOfSteps)
 {
     int ret = SUCCESS;
     
     if (numberOfSteps != NULL)
     {
        long   ID; 
-       char   tempValue[256];
+       char   stdinBuf[STDIN_BUF_SIZE];
           
-       memset(&tempValue, 0, sizeof(char)*256);
+       memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
           
        if (action == INSERT_REG)
        {
@@ -173,26 +177,26 @@ static int showRegMenu(int action, int *numberOfSteps)
           printf("\n\n                    ******* Informacion del Registro *******\n\n");
           printf("Por favor intruduce los datos del registro: \n");
           
-          //prevent buffer overflows with the variable tempValue
+          //prevent buffer overflows with the variable stdinBuf
           printf("ID: ");
-          fgets(tempValue, 256, stdin);
-          ID = atoi(tempValue);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          ID = atoi(stdinBuf);
           
           printf("Name: ");
-          fgets(tempValue, 256, stdin);
-          memcpy(name, tempValue, sizeof(char)*NAME_SIZE);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          memcpy(name, stdinBuf, sizeof(char)*NAME_SIZE);
           
           printf("Telephone: ");
-          fgets(tempValue, 256, stdin);
-          memcpy(tel, tempValue, sizeof(char)*TEL_SIZE);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          memcpy(tel, stdinBuf, sizeof(char)*TEL_SIZE);
           
           printf("Address: ");
-          fgets(tempValue, 256, stdin);
-          memcpy(address, tempValue, sizeof(char)*ADD_SIZE);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          memcpy(address, stdinBuf, sizeof(char)*ADD_SIZE);
           
           printf("City: ");
-          fgets(tempValue, 256, stdin);
-          memcpy(city, tempValue, sizeof(char)*CITY_SIZE);
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          memcpy(city, stdinBuf, sizeof(char)*CITY_SIZE);
           
           MAIN_DEBUG("showRegMenu() InsertReg \nID: %d \nname: %stel: %saddress: %scity: %s\n",
                      ID,
@@ -206,12 +210,22 @@ static int showRegMenu(int action, int *numberOfSteps)
        else if (action == SEARCH_REG)
        {
           printf("\n\n                    ******* Informacion del Registro *******\n\n");
-          printf("Por favor intruduce el ID del registro: \n");
-          fgets(tempValue, 200, stdin);
-          ID = atoi(tempValue);
+          printf("Por favor intruduce el ID del registro a buscar: \n");
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          ID = atoi(stdinBuf);
           
           MAIN_DEBUG("showRegMenu() searchReg ID=%d\n", ID);
           ret = searchReg(ID, numberOfSteps);
+       }
+       else if (action == REMOVE_REG)
+       {
+          printf("\n\n                    ******* Informacion del Registro *******\n\n");
+          printf("Por favor intruduce el ID del registro a eliminar: \n");
+          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
+          ID = atoi(stdinBuf);
+          
+          MAIN_DEBUG("showRegMenu() removeReg ID=%d\n", ID);
+          ret = removeReg(ID);
        }
     }
     else

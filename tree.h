@@ -14,7 +14,8 @@ extern "C" {
 #endif
 
 // Functions:
-int createTree(Register *baseReg, Register *newReg);
+int insertRegIntoTree(Register *baseReg, Register *newReg);
+int searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, long ID, unsigned int *numberOfSteps);
 void destroyTree(Node * tree);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
