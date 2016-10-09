@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and 
+ * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
  * All Rights Reserved
  *
- * Authors: Adrian Luna and 
+ * Authors: - Adrian Luna
+ *          - Ricardo Gonzales
  *
  * Porpuse: Main program
  */
@@ -50,7 +51,7 @@ int main(void)
         MAIN_ERROR("main() Hash table could not be created\n");
     }
     
-    MAIN_DEBUG("main() program ended with rc= %d\n", ret);
+    MAIN_DEBUG("main() program ended with rc= %d\n\n", ret);
     
     termTrace();
     
@@ -222,8 +223,8 @@ static int showRegMenu(int action)
        MAIN_DEBUG("showRegMenu() searchReg ID=%d\n", ID);
        ret = searchReg(ID, &numberOfSteps);
 
-       //print number of Steps:
-       printf("\nNumber of steps: %d\n", numberOfSteps);
+       //print number of steps:
+       printf("Numero de pasos: %d\n\n", numberOfSteps);
     }
     else if (action == REMOVE_REG)
     {

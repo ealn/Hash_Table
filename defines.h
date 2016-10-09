@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and 
+ * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
  * All Rights Reserved
  *
- * Authors: Adrian Luna and 
+ * Authors: - Adrian Luna
+ *          - Ricardo Gonzales
  *
  * Porpuse: Header that contains the constants to detect errors
  */

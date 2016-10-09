@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and 
+ * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
  * All Rights Reserved
  *
- * Authors: Adrian Luna and 
+ * Authors: - Adrian Luna
+ *          - Ricardo Gonzales
  *
  * Porpuse: Header that contains all functions needed to handle hash tables
  */
@@ -26,6 +27,8 @@ void displayTable(void);
 int insertReg(long ID, char *name, char *tel, char *address, char *city);
 int searchReg(long ID, unsigned int *numberOfSteps);
 int removeReg(long ID);
+int destroyReg(Register *reg);
+int cleanReg(Register *reg);
 Node * getTreeFromReg(Register *reg);
 long getIDFromReg(Register *reg);
 void setTreeToReg(Register *reg, Node * newTree);
