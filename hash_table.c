@@ -121,7 +121,7 @@ static Register * getRegisterAtIndex(unsigned int index)
     {
         reg = g_hashTable->registers + index;
 
-        HASHTAB_DEBUG("getRegisterAtIndex() reg->ID\n", reg->ID); 
+        HASHTAB_DEBUG("getRegisterAtIndex() reg->ID=%d\n", reg->ID); 
     }
     
     return reg;
@@ -142,10 +142,10 @@ static void printRegInfo(Register * reg)
     {
         printf("\n\n         **** Informacion del Registro ****\n\n");
         printf("ID: %d\n",      reg->ID);
-        printf("Name: %s\n",    reg->name);
-        printf("Tel: %s\n",     reg->tel);
-        printf("Address: %s\n", reg->address);
-        printf("City: %s\n\n",  reg->city);
+        printf("Name: %s",    reg->name);
+        printf("Tel: %s",     reg->tel);
+        printf("Address: %s", reg->address);
+        printf("City: %s\n",  reg->city);
     }
     else
     {
@@ -223,7 +223,7 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
         HASHTAB_DEBUG("insertReg() reg->ID=%d reg->tree=%08lx\n", reg->ID, reg->tree);
 
         //if the register is empty
-        if (reg->ID != 0)
+        if (reg->ID == 0)
         {
             //copy the information
             reg->ID = ID;
@@ -273,6 +273,8 @@ int searchReg(long ID, unsigned int *numberOfSteps)
         if (reg != NULL)
         {
             *numberOfSteps = 1;
+
+            HASHTAB_DEBUG("searchReg() reg->ID=%d ID=%d reg->tree=%08lx\n", reg->ID, ID, reg->tree);
 
             if (reg->ID == ID)   //if the IDs are equals
             {

@@ -151,8 +151,7 @@ static int searchID(Node *topNode, long ID, unsigned int *numberOfSteps, Node **
 
     if (topNode != NULL
         && numberOfSteps != NULL
-        && ppOutputNode != NULL
-        && *ppOutputNode != NULL)
+        && ppOutputNode != NULL)
     {
         Node *pNode = topNode;
 
@@ -284,8 +283,7 @@ int searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, long ID, un
 
     if (baseReg != NULL
         && numberOfSteps != NULL
-        && ppOutputRegister != NULL
-        && *ppOutputRegister != NULL)
+        && ppOutputRegister != NULL)
     {
         Node *topNode = NULL;
         Node *outputNode = NULL;
