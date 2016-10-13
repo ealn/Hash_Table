@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: Adrian Luna
  *
  * Porpuse: Header that contains all functions to allocate and free memory
  */

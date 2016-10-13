@@ -1,15 +1,13 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: - Adrian Luna
  *
  * Porpuse: Implementation of trace module
  */
 
 #include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <time.h>
 
@@ -19,12 +17,13 @@
 #define LOG_FILE     "log.txt"
 
 //Constants
-#define MONTH_OFFSET    1
-#define YEAR_OFFSET     1900
-#define TIME_BUF_SIZE   20
-#define MESS_BUF_SIZE   12
-#define PARM_BUF_SIZE   256
-#define BUF_SIZE        TIME_BUF_SIZE + MESS_BUF_SIZE + PARM_BUF_SIZE
+#define MONTH_OFFSET        1
+#define YEAR_OFFSET         1900
+#define TIME_BUF_SIZE       20
+#define MESS_BUF_SIZE       12
+#define CALLER_BUF_SIZE     20
+#define PARM_BUF_SIZE       256
+#define BUF_SIZE        TIME_BUF_SIZE + MESS_BUF_SIZE + CALLER_BUF_SIZE + PARM_BUF_SIZE
 
 
 //Trace file
@@ -59,7 +58,7 @@ static void writeTrace(char * str)
     }
 }
 
-void getTimeStamp(char * pOutputTime)
+static void getTimeStamp(char * pOutputTime)
 {
     if (pOutputTime != NULL)
     {
@@ -74,7 +73,7 @@ void getTimeStamp(char * pOutputTime)
 
         if (pLocalTime != NULL)
         {
-           //We need to add the offset to the variables tm_mon and tm_year
+           //Add the offset to the variables tm_mon and tm_year
             pLocalTime->tm_mon += MONTH_OFFSET;
             pLocalTime->tm_year += YEAR_OFFSET;
 
@@ -91,80 +90,70 @@ void getTimeStamp(char * pOutputTime)
     }
 }
 
-void traceDataDebug(const char *pParm, ...)
+static void traceData(const char *pCaller, const char *pMessType, const char * pParm)
 {
-    va_list argList;
-    char parBuf[PARM_BUF_SIZE];
     char timeStamp[TIME_BUF_SIZE];
-    char MessageType[MESS_BUF_SIZE] = "DEBUG -";
+    char messageType[MESS_BUF_SIZE];
     char buff[BUF_SIZE];
+    char callerBuf[CALLER_BUF_SIZE];
     
-    memset(parBuf, 0, sizeof(char)*PARM_BUF_SIZE);
+    memset(timeStamp, 0, sizeof(char)*TIME_BUF_SIZE);
+    memset(messageType, 0, sizeof(char)*MESS_BUF_SIZE);
     memset(buff, 0, sizeof(char)*BUF_SIZE);
+    memset(callerBuf, 0, sizeof(char)*CALLER_BUF_SIZE);
 
-    va_start(argList, pParm);
-    vsnprintf(parBuf, sizeof(parBuf), pParm, argList);
-    va_end(argList);
-
+    memcpy(messageType, pMessType, sizeof(char)*MESS_BUF_SIZE);
+    memcpy(callerBuf, pCaller, sizeof(char)*(CALLER_BUF_SIZE - 2)); //the size of parenthesis is 2
     getTimeStamp(timeStamp);
-
+    
     sprintf(buff,
-            "%s %s %s",
+            "%s %s %s() %s",
             timeStamp,
-            MessageType,
-            parBuf);
+            messageType,
+            callerBuf,
+            pParm);
 
     writeTrace(buff);
 }
 
-void traceDataWarning(const char *pParm, ...)
+void traceDataDebug(const char *pCaller, const char *pParm, ...)
 {
-    va_list argList;
     char parBuf[PARM_BUF_SIZE];
-    char timeStamp[TIME_BUF_SIZE];
-    char MessageType[MESS_BUF_SIZE] = "WARNING -";
-    char buff[BUF_SIZE];
-    
+    va_list argList;
+
     memset(parBuf, 0, sizeof(char)*PARM_BUF_SIZE);
-    memset(buff, 0, sizeof(char)*BUF_SIZE);
 
     va_start(argList, pParm);
-    vsnprintf(parBuf, sizeof(parBuf), pParm, argList);
+    vsnprintf(parBuf, sizeof(char)*PARM_BUF_SIZE, pParm, argList);
     va_end(argList);
 
-    getTimeStamp(timeStamp);
-
-    sprintf(buff,
-            "%s %s %s",
-            timeStamp,
-            MessageType,
-            parBuf);
-
-    writeTrace(buff);
+    traceData(pCaller, "DEBUG -", parBuf);
 }
 
-void traceDataError(const char *pParm, ...)
+void traceDataWarning(const char *pCaller, const char *pParm, ...)
 {
-    va_list argList;
     char parBuf[PARM_BUF_SIZE];
-    char timeStamp[TIME_BUF_SIZE];
-    char MessageType[MESS_BUF_SIZE] = "ERROR -";
-    char buff[BUF_SIZE];
-    
+    va_list argList;
+
     memset(parBuf, 0, sizeof(char)*PARM_BUF_SIZE);
-    memset(buff, 0, sizeof(char)*BUF_SIZE);
 
     va_start(argList, pParm);
-    vsnprintf(parBuf, sizeof(parBuf), pParm, argList);
+    vsnprintf(parBuf, sizeof(char)*PARM_BUF_SIZE, pParm, argList);
     va_end(argList);
 
-    getTimeStamp(timeStamp);
+    traceData(pCaller, "WARNING -", parBuf);
+}
 
-    sprintf(buff,
-            "%s %s %s",
-            timeStamp,
-            MessageType,
-            parBuf);
+void traceDataError(const char *pCaller, const char *pParm, ...)
+{
+    char parBuf[PARM_BUF_SIZE];
+    va_list argList;
 
-    writeTrace(buff);
+    memset(parBuf, 0, sizeof(char)*PARM_BUF_SIZE);
+
+    va_start(argList, pParm);
+    vsnprintf(parBuf, sizeof(char)*PARM_BUF_SIZE, pParm, argList);
+    va_end(argList);
+
+    traceData(pCaller, "ERROR -", parBuf);
 }

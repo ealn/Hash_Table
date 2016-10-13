@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: - Adrian Luna
  *
  * Porpuse: Implementation of memory utils
  */
@@ -25,7 +24,7 @@ void * memAlloc(size_t size,
     {
        ptr = malloc(size);
        
-       MEM_DEBUG("memAlloc() ptr=%08lx size=%i caller:%s() file:%s line:%d\n", 
+       MEM_DEBUG("ptr=%08lx size=%i caller:%s() file:%s line:%d\n", 
                  ptr, 
                  size, 
                  func, 
@@ -38,12 +37,12 @@ void * memAlloc(size_t size,
        }
        else
        {
-           MEM_ERROR("memAlloc() memory could not be allocated\n");
+           MEM_ERROR("Memory could not be allocated\n");
        }
     }
     else
     {
-        MEM_ERROR("memAlloc() size=0\n");
+        MEM_ERROR("size=0\n");
     }
     
     return ptr;
@@ -56,7 +55,7 @@ void memFree(void * ptr,
 {
     if (ptr != NULL)
     {
-       MEM_DEBUG("memFree() ptr=%08lx caller:%s() file:%s line:%d\n", 
+       MEM_DEBUG("ptr=%08lx caller:%s() file:%s line:%d\n", 
                  ptr, 
                  func, 
                  file,
@@ -66,7 +65,7 @@ void memFree(void * ptr,
     }
     else
     {
-        MEM_WARNING("memFree() pointer is null\n");
+        MEM_WARNING("Pointer is null\n");
     }
 }
 
@@ -83,7 +82,7 @@ void * memRealloc(void *ptr,
     {
         newPtr = memAlloc(newSize, func, file, line);
 
-        MEM_DEBUG("memRealloc() ptr=%08lx origSize=%i newSize=%i newPtr=%08lx caller:%s() file:%s line:%d\n", 
+        MEM_DEBUG("ptr=%08lx origSize=%i newSize=%i newPtr=%08lx caller:%s() file:%s line:%d\n", 
                   ptr,
                   origSize,
                   newSize,
@@ -100,7 +99,7 @@ void * memRealloc(void *ptr,
             }
             else
             {
-               MEM_WARNING("memRealloc() new size is minor than origin size\n");
+               MEM_WARNING("New size is minor than origin size\n");
                memcpy(newPtr, ptr, newSize); 
             }
             
@@ -108,12 +107,12 @@ void * memRealloc(void *ptr,
         }
         else
         {
-            MEM_ERROR("memRealloc() memory could not be allocated\n");
+            MEM_ERROR("Memory could not be allocated\n");
         }       
     }
     else
     {
-        MEM_WARNING("memRealloc() pointer is null\n");
+        MEM_WARNING("Pointer is null\n");
     }
     
     return newPtr;

@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: - Adrian Luna
  *
  * Porpuse: Implementation of algorithms to handle Hash tables
  */
@@ -59,7 +58,7 @@ static Register * allocRegisters(unsigned int numberOfReg)
     
        if (reg == NULL)
        {
-          HASHTAB_ERROR("allocRegisters() could not be allocated %i Registers\n", numberOfReg);
+          HASHTAB_ERROR("Could not be allocated %i Registers\n", numberOfReg);
        }
     }
     
@@ -75,11 +74,11 @@ static void allocTable(unsigned int numberOfReg)
         g_hashTable->size = numberOfReg;
         g_hashTable->registers = allocRegisters(numberOfReg);
 
-        HASHTAB_DEBUG("allocTable() g_hashTable=%08lx size = %d\n", g_hashTable, g_hashTable->size);
+        HASHTAB_DEBUG("g_hashTable=%08lx size = %d\n", g_hashTable, g_hashTable->size);
     }
     else
     {
-        HASHTAB_ERROR("allocTable() could not be allocated the hash table\n");
+        HASHTAB_ERROR("Could not be allocated the hash table\n");
     }
 }
 
@@ -87,13 +86,13 @@ static void freeRegister(Register *pRegister)
 {
     if (pRegister != NULL)
     {
-        HASHTAB_DEBUG("freeRegister() pRegister->ID=%d\n", pRegister->ID);
+        HASHTAB_DEBUG("pRegister->ID=%d\n", pRegister->ID);
 
         MEMFREE((void *)pRegister);
     }
     else
     {
-        HASHTAB_WARNING("freeRegister() register is null\n");
+        HASHTAB_WARNING("Register is null\n");
     }
 }
 
@@ -101,7 +100,7 @@ static void freeTable(void)
 {
     if (g_hashTable != NULL)
     {
-        HASHTAB_DEBUG("freeTable() g_hashTable=%08lx\n", g_hashTable);
+        HASHTAB_DEBUG("g_hashTable=%08lx\n", g_hashTable);
 
         freeRegister(g_hashTable->registers);
         MEMFREE((void *)g_hashTable);
@@ -109,7 +108,7 @@ static void freeTable(void)
     }
     else
     {
-        HASHTAB_WARNING("freeTable() g_hashTable is null\n");
+        HASHTAB_WARNING("g_hashTable is null\n");
     }
 }
 
@@ -122,7 +121,7 @@ static Register * getRegisterAtIndex(unsigned int index)
     {
         reg = g_hashTable->registers + index;
 
-        HASHTAB_DEBUG("getRegisterAtIndex() reg->ID=%d\n", reg->ID); 
+        HASHTAB_DEBUG("reg->ID=%d\n", reg->ID); 
     }
     
     return reg;
@@ -150,7 +149,7 @@ static void printRegInfo(Register * reg)
     }
     else
     {
-        HASHTAB_ERROR("printRegInfo() Register is null\n");
+        HASHTAB_ERROR("Register is null\n");
     }
 }
 
@@ -201,7 +200,7 @@ void destroyTable(void)
     }
     else
     {
-        HASHTAB_WARNING("destroyTable() hash table is null\n");
+        HASHTAB_WARNING("Hash table is null\n");
     }
 }
 
@@ -221,7 +220,7 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
 
     if (reg != NULL)
     {
-        HASHTAB_DEBUG("insertReg() hashValue=%d reg->ID=%d reg->tree=%08lx\n", 
+        HASHTAB_DEBUG("hashValue=%d reg->ID=%d reg->tree=%08lx\n", 
                       hashValue,
                       reg->ID, 
                       reg->tree);
@@ -229,7 +228,7 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
         //if the register is empty
         if (reg->ID == 0)
         {
-            HASHTAB_DEBUG("insertReg() empty slot found\n");
+            HASHTAB_DEBUG("Empty slot found\n");
 
             //copy the information
             reg->ID = ID;
@@ -243,7 +242,7 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
             //create a new register
             Register *newReg = NULL;
 
-            HASHTAB_DEBUG("insertReg() collision detected\n");
+            HASHTAB_DEBUG("Collision detected\n");
 
             newReg = allocRegisters(1);
 
@@ -260,7 +259,7 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
     }
     else
     {
-        HASHTAB_ERROR("insertReg() register was not found\n");
+        HASHTAB_ERROR("Register was not found\n");
     }
     
     return ret;
@@ -282,7 +281,7 @@ int searchReg(long ID, unsigned int *numberOfSteps)
         {
             *numberOfSteps = 1;
 
-            HASHTAB_DEBUG("searchReg() hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
+            HASHTAB_DEBUG("hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
                           hashValue, 
                           reg->ID, 
                           ID, 
@@ -290,7 +289,7 @@ int searchReg(long ID, unsigned int *numberOfSteps)
 
             if (reg->ID == ID)   //if the IDs are equals
             {
-                HASHTAB_DEBUG("searchReg() register was found with the hash value\n");
+                HASHTAB_DEBUG("Register was found with the hash value\n");
 
                 //register found, print information
                 printRegInfo(reg);
@@ -299,7 +298,7 @@ int searchReg(long ID, unsigned int *numberOfSteps)
             {
                 Register * outputReg = NULL;
 
-                HASHTAB_DEBUG("searchReg() search register in the tree\n");
+                HASHTAB_DEBUG("Search register in the tree\n");
 
                 //search register into tree
                 ret = searchIDIntoTree(reg, &outputReg, ID, numberOfSteps);
@@ -314,25 +313,25 @@ int searchReg(long ID, unsigned int *numberOfSteps)
                 else
                 {
                     //register was not found
-                    HASHTAB_WARNING("searchReg() register with ID=%d was not found\n", ID);
+                    HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
                     ret = FAIL;
                 }
             }
             else
             {
                 //register was not found
-                HASHTAB_WARNING("searchReg() register with ID=%d was not found\n", ID);
+                HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
                 ret = FAIL;
             }
         }
         else
         {
-            HASHTAB_ERROR("searchReg() register was not found\n");
+            HASHTAB_ERROR("Register was not found\n");
         }
     }
     else
     {
-        HASHTAB_ERROR("searchReg() number of steps is null\n");
+        HASHTAB_ERROR("Number of steps is null\n");
         ret = FAIL;
     }
 
@@ -344,13 +343,14 @@ int removeReg(long ID)
     int ret = SUCCESS;
     unsigned int  hashValue = 0;
     Register     *reg = NULL;
+    int           numberOfSteps = 0;
 
     hashValue = getHashValue(ID);
     reg = getRegisterAtIndex(hashValue);
 
     if (reg != NULL)
     {
-        HASHTAB_DEBUG("removeReg() hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
+        HASHTAB_DEBUG("hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
                       hashValue, 
                       reg->ID, 
                       ID, 
@@ -358,27 +358,29 @@ int removeReg(long ID)
 
         if (reg->ID == ID)   //if the IDs are equals
         {
-            HASHTAB_DEBUG("removeReg() register was found with the hash value\n");
+            HASHTAB_DEBUG("Register was found with the hash value\n");
 
             //register found and the register does not have a tree
             if (reg->tree == NULL)
             {
                 // clean information
-                cleanReg(reg);
+                ret = cleanReg(reg);
             }
             else
             {
-                //TODO remove top node
+                //remove top node
+                ret = removeRegIntoTree(reg);
             }
         }
         else if (reg->tree != NULL)  //if this register has a tree
         {
-            //TODO search into tree
+            //search register into tree
+            ret = removeIDIntoTree(reg, ID, &numberOfSteps);
         }
     }
     else
     {
-        HASHTAB_ERROR("removeReg() register was not found\n");
+        HASHTAB_ERROR("Register was not found\n");
     }
 
     return ret;
@@ -394,7 +396,7 @@ int destroyReg(Register *reg)
     }
     else
     {
-        HASHTAB_WARNING("destroyReg() register is null\n");
+        HASHTAB_WARNING("Register is null\n");
     }
 
     return ret;
@@ -410,7 +412,7 @@ int cleanReg(Register *reg)
     }
     else
     {
-        HASHTAB_WARNING("cleanReg() register is null\n");
+        HASHTAB_WARNING("Register is null\n");
     }
 
     return ret;

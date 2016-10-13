@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: Adrian Luna
  *
  * Porpuse: Main program
  */
@@ -48,10 +47,10 @@ int main(void)
     }
     else
     {
-        MAIN_ERROR("main() Hash table could not be created\n");
+        MAIN_ERROR("Hash table could not be created\n");
     }
     
-    MAIN_DEBUG("main() program ended with rc= %d\n\n", ret);
+    MAIN_DEBUG("Program ended with rc= %d\n\n", ret);
     
     termTrace();
     
@@ -79,7 +78,7 @@ static int showGui(void)
         
         ret = showMainMenu(&optionSelected);
     
-        MAIN_DEBUG("showGui() optionSelected=%i\n", optionSelected);
+        MAIN_DEBUG("optionSelected=%i\n", optionSelected);
 
         switch (optionSelected)
         {
@@ -199,7 +198,7 @@ static int showRegMenu(int action)
        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
        memcpy(city, stdinBuf, sizeof(char)*CITY_SIZE);
        
-       MAIN_DEBUG("showRegMenu() InsertReg \nID: %d \nname: %stel: %saddress: %scity: %s\n",
+       MAIN_DEBUG("InsertReg \nID: %d \nname: %stel: %saddress: %scity: %s\n",
                   ID,
                   name,
                   tel,
@@ -220,7 +219,7 @@ static int showRegMenu(int action)
        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
        ID = atoi(stdinBuf);
        
-       MAIN_DEBUG("showRegMenu() searchReg ID=%d\n", ID);
+       MAIN_DEBUG("searchReg ID=%d\n", ID);
        ret = searchReg(ID, &numberOfSteps);
 
        //print number of steps:
@@ -233,7 +232,7 @@ static int showRegMenu(int action)
        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
        ID = atoi(stdinBuf);
        
-       MAIN_DEBUG("showRegMenu() removeReg ID=%d\n", ID);
+       MAIN_DEBUG("removeReg ID=%d\n", ID);
        ret = removeReg(ID);
     }
 

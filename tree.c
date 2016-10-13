@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2016 by Adrian Luna and Ricardo Gonzales
+ * Copyright (c) 2016 by Adrian Luna
  * All Rights Reserved
  *
- * Authors: - Adrian Luna
- *          - Ricardo Gonzales
+ * Author: - Adrian Luna
  *
  * Porpuse: Implementation of algorithms to handle trees
  */
@@ -58,7 +57,7 @@ static Node * allocNode(void)
     
     if (pNode == NULL)
     {
-        TREE_ERROR("allocNode() Node could not be allocated\n");
+        TREE_ERROR("Node could not be allocated\n");
     }
     
     return pNode;
@@ -72,7 +71,7 @@ static void freeNode(Node *pNode)
     }
     else
     {
-        TREE_WARNING("freeNode() Node is null\n");
+        TREE_WARNING("Node is null\n");
     }
 }
 
@@ -89,7 +88,7 @@ static Node * createNode(Register *reg)
             newNode->ID = getIDFromReg(reg);
             newNode->reg = reg;
 
-            TREE_DEBUG("createNode() newNode->ID=%d newNode->reg=%08lx\n", newNode->ID, newNode->reg);
+            TREE_DEBUG("newNode->ID=%d newNode->reg=%08lx\n", newNode->ID, newNode->reg);
         }
     }
     
@@ -102,7 +101,7 @@ static void destroyNode(Node * pNode)
     {
         Register * reg = pNode->reg;
 
-        TREE_DEBUG("destroyNode() pNode->ID=%d pNode->parent=%08lx\n", pNode->ID, pNode->parent);
+        TREE_DEBUG("pNode->ID=%d pNode->parent=%08lx\n", pNode->ID, pNode->parent);
 
         //if this node was the top node
         if (isTopNode(pNode))
@@ -120,7 +119,7 @@ static void destroyNode(Node * pNode)
     }
     else
     {
-        TREE_WARNING("destroyNode() Node is null\n");
+        TREE_WARNING("Node is null\n");
     }
 }
 
@@ -150,12 +149,26 @@ static Node * getTopNode(Node *pNode)
             topNode = topNode->parent;
         }
     }
-    else
-    {
-        TREE_WARNING("getTopNode() Node is null\n");
-    }
 
     return topNode;
+}
+
+static Node * getLastLeftChild(Node *pNode)
+{
+    Node * lastLeftChild = NULL;
+
+    if (pNode != NULL)
+    {
+        lastLeftChild = pNode;
+
+        while (lastLeftChild != NULL
+               && lastLeftChild->leftSide != NULL)
+        {
+            lastLeftChild = lastLeftChild->leftSide;
+        }
+    }
+
+    return lastLeftChild;
 }
 
 static void replaceNode(Node *pNode, Node *pNewNode)
@@ -187,7 +200,7 @@ static void replaceNode(Node *pNode, Node *pNewNode)
     }
     else
     {
-        TREE_WARNING("replaceNode() at least one node is null\n");
+        TREE_WARNING("At least one node is null\n");
     }
 }
 
@@ -199,7 +212,7 @@ static int removeLeaf(Node *pNode)
     {
         Node * parent;
 
-        TREE_DEBUG("removeLeaf() pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
+        TREE_DEBUG("pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
                    pNode->ID,
                    pNode->leftSide,
                    pNode->rightSide);
@@ -226,12 +239,12 @@ static int removeLeaf(Node *pNode)
         }
         else
         {
-            TREE_WARNING("removeLeaf() Node is not a leaf\n");
+            TREE_WARNING("Node is not a leaf\n");
         }
     }
     else
     {
-        TREE_WARNING("removeLeaf() Node is null\n");
+        TREE_WARNING("Node is null\n");
     }
 
     return ret;
@@ -243,7 +256,7 @@ static int removeTreeWithOneChild(Node *pNode)
 
     if (pNode != NULL)
     {
-        TREE_DEBUG("removeTreeWithOneChild() pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
+        TREE_DEBUG("pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
                    pNode->ID,
                    pNode->leftSide,
                    pNode->rightSide);
@@ -267,7 +280,7 @@ static int removeTreeWithOneChild(Node *pNode)
 
             replaceNode(pNode, child);
 
-            TREE_DEBUG("removeTreeWithOneChild() child->ID=%d child->leftSide=%08lx child->rigthSide=%08lx child->parent=%08lx\n", 
+            TREE_DEBUG("child->ID=%d child->leftSide=%08lx child->rigthSide=%08lx child->parent=%08lx\n", 
                        child->ID,
                        child->leftSide,
                        child->rightSide,
@@ -278,13 +291,13 @@ static int removeTreeWithOneChild(Node *pNode)
         else
         {
             ret = FAIL;
-            TREE_WARNING("removeTreeWithOneChild() Node does not have one child\n");
+            TREE_WARNING("Node does not have one child\n");
         }
     }
     else
     {
         ret = FAIL;
-        TREE_WARNING("removeTreeWithOneChild() Node is null\n");
+        TREE_WARNING("Node is null\n");
     }
 
     return ret;
@@ -296,7 +309,7 @@ static int removeTreeWithTwoChilds(Node *pNode)
 
     if (pNode != NULL)
     {
-        TREE_DEBUG("removeTreeWithOneChild() pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
+        TREE_DEBUG("pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
                    pNode->ID,
                    pNode->leftSide,
                    pNode->rightSide);
@@ -304,19 +317,49 @@ static int removeTreeWithTwoChilds(Node *pNode)
         if (pNode->leftSide != NULL
             && pNode->rightSide != NULL)
         {
-            //TODO
-            destroyNode(pNode);
+            Node *rightChild = NULL;
+            Node *leftChild = NULL;
+            Node *lastLeftChild = NULL;
+
+            rightChild = pNode->rightSide;
+            leftChild = pNode->leftSide;
+
+            //find the last left child
+            lastLeftChild = getLastLeftChild(rightChild);
+
+            // if there is not more left childs
+            if (lastLeftChild == rightChild)
+            {
+                replaceNode(pNode, lastLeftChild);
+                lastLeftChild->leftSide = leftChild;
+            }
+            else
+            {
+                //if the last left child has a right child
+                if (lastLeftChild->rightSide != NULL)
+                {
+                    //replace the last left child with the right node
+                    replaceNode(lastLeftChild, lastLeftChild->rightSide);
+                }
+
+                // replace pNode with the last left child
+                replaceNode(pNode, lastLeftChild);
+                lastLeftChild->leftSide = leftChild;
+                lastLeftChild->rightSide = rightChild;
+            }
+
+            destroyNode(pNode); 
         }
         else
         {
             ret = FAIL;
-            TREE_WARNING("removeTreeWithOneChild() Node does not have one child\n");
+            TREE_WARNING("Node does not have one child\n");
         }
     }
     else
     {
         ret = FAIL;
-        TREE_WARNING("removeTreeWithOneChild() Node is null\n");
+        TREE_WARNING("Node is null\n");
     }
 
     return ret;
@@ -331,12 +374,19 @@ static int removeNodeFromTree(Node *pNode)
         int needBalance = 0;
         Node *topNode = NULL;
 
-        TREE_DEBUG("removeNodeFromTree() pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
+        TREE_DEBUG("pNode->ID=%d pNode->leftSide=%08lx pNode->rigthSide=%08lx\n", 
                    pNode->ID,
                    pNode->leftSide,
                    pNode->rightSide);
 
-        topNode = getTopNode(pNode);
+        if (isTopNode(pNode))
+        {
+            //TODO
+        }
+        else
+        {
+            topNode = getTopNode(pNode); 
+        }
 
         if (pNode->leftSide == NULL
             && pNode->rightSide == NULL)
@@ -357,15 +407,20 @@ static int removeNodeFromTree(Node *pNode)
             ret = removeTreeWithTwoChilds(pNode);
             needBalance = 1;
         }
+        else
+        {
+            ret = FAIL;
+        }
 
-        if (needBalance == 1)
+        if (needBalance == 1
+            && topNode != NULL)
         {
             balanceTree(topNode);
         }
     }
     else
     {
-        TREE_ERROR("removeNodeFromTree() Node is null\n");
+        TREE_ERROR("Node is null\n");
     }
 
     return ret;
@@ -408,14 +463,14 @@ static int navigateTree(Node *topNode, int algorithm, NavFunction pNavFunction)
             case NAV_POSTORDER: ret = postOrden(topNode, pNavFunction);
                 break;
             default:
-                TREE_WARNING("navigateTree() invalid algorithm\n");
+                TREE_WARNING("Invalid algorithm\n");
                 break;
         }
     }
     else
     {
         ret = FAIL;
-        TREE_ERROR("navigateTree() top node is null or navigation function is null\n");
+        TREE_ERROR("Top node is null or navigation function is null\n");
     }
 
     return ret;
@@ -434,7 +489,9 @@ static int inOrden(Node *pNode, NavFunction pNavFunction)
 
             ret = inOrden(leftNode, pNavFunction);
 
-            TREE_DEBUG("inOrden() pNode->ID=%d\n",pNode->ID);
+            //TODO: break recursivity when a fails occurs
+
+            TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
             ret = pNavFunction(pNode);
 
@@ -444,7 +501,7 @@ static int inOrden(Node *pNode, NavFunction pNavFunction)
     else
     {
         ret = FAIL;
-        TREE_ERROR("inOrden() navigation function is null\n");
+        TREE_ERROR("Navigation function is null\n");
     }
 
     return ret;
@@ -461,10 +518,11 @@ static int preOrden(Node *pNode, NavFunction pNavFunction)
             Node *leftNode = pNode->leftSide;
             Node *rightNode = pNode->rightSide;
 
-            TREE_DEBUG("preOrden() pNode->ID=%d\n",pNode->ID);
+            TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
             ret = pNavFunction(pNode);
 
+            //TODO: break recursivity when a fails occurs
             ret = preOrden(leftNode, pNavFunction);
             ret = preOrden(rightNode, pNavFunction);
         }
@@ -472,7 +530,7 @@ static int preOrden(Node *pNode, NavFunction pNavFunction)
     else
     {
         ret = FAIL;
-        TREE_ERROR("preOrden() navigation function is null\n");
+        TREE_ERROR("Navigation function is null\n");
     }
 
     return ret;
@@ -489,10 +547,11 @@ static int postOrden(Node *pNode, NavFunction pNavFunction)
             Node *leftNode = pNode->leftSide;
             Node *rightNode = pNode->rightSide;
 
+            //TODO: break recursivity when a fails occurs
             ret = postOrden(leftNode, pNavFunction);
             ret = postOrden(rightNode, pNavFunction);
 
-            TREE_DEBUG("postOrden() pNode->ID=%d\n",pNode->ID);
+            TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
             ret = pNavFunction(pNode);
         }
@@ -500,7 +559,7 @@ static int postOrden(Node *pNode, NavFunction pNavFunction)
     else
     {
         ret = FAIL;
-        TREE_ERROR("postOrden() navigation function is null\n");
+        TREE_ERROR("Navigation function is null\n");
     }
 
     return ret;
@@ -517,7 +576,7 @@ static int insertNode(Node *topNode, Node *newNode)
 
         while (pNode != NULL)
         {
-            TREE_DEBUG("insertNode() - newNode->ID=%d pNode->ID=%d\n", newNode->ID, pNode->ID);
+            TREE_DEBUG("newNode->ID=%d pNode->ID=%d\n", newNode->ID, pNode->ID);
 
             if (newNode->ID < pNode->ID)
             {
@@ -550,13 +609,13 @@ static int insertNode(Node *topNode, Node *newNode)
             else  //IDs are equal
             {
                 ret = FAIL;
-                TREE_ERROR("insertNode() IDs repeated\n");
+                TREE_ERROR("IDs repeated\n");
             }
         }
     }
     else
     {
-        TREE_ERROR("insertNode() top node is null or new node is null\n");
+        TREE_ERROR("Top node is null or new node is null\n");
         ret = FAIL;
     }
 
@@ -579,7 +638,7 @@ static int searchID(Node *topNode, long ID, unsigned int *numberOfSteps, Node **
 
         while (pNode != NULL)
         {
-            TREE_DEBUG("searchID() - pNode->ID=%d ID=%d\n", pNode->ID, ID);
+            TREE_DEBUG("pNode->ID=%d ID=%d\n", pNode->ID, ID);
 
             if (ID == pNode->ID)  //IDs are equal
             {
@@ -596,7 +655,7 @@ static int searchID(Node *topNode, long ID, unsigned int *numberOfSteps, Node **
                 else
                 {
                     //ID was not found
-                    TREE_ERROR("searchID() ID was not found\n");
+                    TREE_ERROR("ID was not found\n");
                     ret = FAIL;
                     break;
                 }
@@ -610,7 +669,7 @@ static int searchID(Node *topNode, long ID, unsigned int *numberOfSteps, Node **
                 else
                 {
                     //ID was not found
-                    TREE_ERROR("searchID() ID was not found\n");
+                    TREE_ERROR("ID was not found\n");
                     ret = FAIL;
                     break;
                 }
@@ -624,7 +683,7 @@ static int searchID(Node *topNode, long ID, unsigned int *numberOfSteps, Node **
     }
     else
     {
-        TREE_ERROR("searchID() at least one parameter is null\n");
+        TREE_ERROR("At least one parameter is null\n");
     }
 
     return ret; 
@@ -648,7 +707,7 @@ static int createTree(Register *baseReg, Register *newReg)
             //create top node of tree
             topTree = createNode(baseReg);
             setTreeToReg(baseReg, topTree);
-            TREE_DEBUG("createTree() creating top node baseReg->tree=%08lx\n", getTreeFromReg(baseReg));
+            TREE_DEBUG("Creating top node baseReg->tree=%08lx\n", getTreeFromReg(baseReg));
         }
         
         if (topTree != NULL)
@@ -656,7 +715,7 @@ static int createTree(Register *baseReg, Register *newReg)
             //create new node
             newNode = createNode(newReg);
             setTreeToReg(newReg, newNode);
-            TREE_DEBUG("createTree() creating new node newReg->tree=%08lx\n", getTreeFromReg(newReg));
+            TREE_DEBUG("Creating new node newReg->tree=%08lx\n", getTreeFromReg(newReg));
             
             if (newNode != NULL)
             {
@@ -670,13 +729,13 @@ static int createTree(Register *baseReg, Register *newReg)
             else
             {
                 ret = FAIL;
-                TREE_ERROR("createTree() the new node could not be created\n");
+                TREE_ERROR("New node could not be created\n");
             }
         }
         else
         {
             ret = FAIL;
-            TREE_ERROR("createTree() the top node cannot be created\n");
+            TREE_ERROR("Top node cannot be created\n");
         }
     }
     
@@ -690,7 +749,7 @@ int insertRegIntoTree(Register *baseReg, Register *newReg)
     if (baseReg != NULL
        && newReg != NULL)
     {
-        TREE_DEBUG("insertRegIntoTree() baseReg=%08lx baseReg->ID=%d newReg=%08lx newReg->ID=%d\n",
+        TREE_DEBUG("baseReg=%08lx baseReg->ID=%d newReg=%08lx newReg->ID=%d\n",
                    baseReg,
                    getIDFromReg(baseReg),
                    newReg,
@@ -712,7 +771,7 @@ int searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, long ID, un
         Node *topNode = NULL;
         Node *outputNode = NULL;
 
-        TREE_DEBUG("searchIDIntoTree() baseReg=%08lx baseReg->ID=%d ID=%d\n",
+        TREE_DEBUG("baseReg=%08lx baseReg->ID=%d ID=%d\n",
                    baseReg,
                    getIDFromReg(baseReg),
                    ID);
@@ -728,20 +787,20 @@ int searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, long ID, un
             {
                 *ppOutputRegister = outputNode->reg;
 
-                TREE_DEBUG("searchIDIntoTree() *ppOutputRegister=%08lx *ppOutputRegister->ID=%d\n",
+                TREE_DEBUG("*ppOutputRegister=%08lx *ppOutputRegister->ID=%d\n",
                             *ppOutputRegister,
                             getIDFromReg(*ppOutputRegister));
             }
         }
         else
         {
-            TREE_ERROR("searchIDIntoTree() top node is null\n");
+            TREE_ERROR("Top node is null\n");
             ret = FAIL;
         }
     }
     else
     {
-        TREE_ERROR("searchIDIntoTree() at least one parameter is null\n");
+        TREE_ERROR("At least one parameter is null\n");
     }
 
     return ret;
@@ -761,12 +820,76 @@ void destroyTree(Node * tree)
         
         if (ret != SUCCESS)
         {
-            TREE_ERROR("destroyTree() ret=%d\n", ret);
+            TREE_ERROR("ret=%d\n", ret);
         }
     }
     else
     {
-        TREE_ERROR("destroyTree() tree is null\n");
+        TREE_ERROR("Tree is null\n");
     }
 }
 
+int removeRegIntoTree(Register *reg)
+{
+    int ret = SUCCESS;
+
+    if (reg != NULL)
+    {
+        Node * pNode = NULL;
+
+        pNode = getTreeFromReg(reg);
+
+        if (pNode != NULL)
+        {
+            ret = removeNodeFromTree(pNode);
+        }
+        else
+        {
+            ret = FAIL;
+            TREE_ERROR("Node is null\n");
+        }
+    }
+    else
+    {
+        ret = FAIL;
+        TREE_ERROR("Register is null\n");
+    }
+
+    return ret;
+}
+
+int removeIDIntoTree(Register *baseReg, int ID, int *numberOfSteps)
+{
+    int ret = SUCCESS;
+
+    if (baseReg != NULL)
+    {
+        Node * pNode = NULL;
+        Register *outputReg = NULL;
+
+        pNode = getTreeFromReg(baseReg);
+
+        if (pNode != NULL)
+        {
+            ret = searchIDIntoTree(baseReg, &outputReg, ID, numberOfSteps);
+
+            if (ret == SUCCESS
+                && outputReg != NULL)
+            {
+                ret = removeRegIntoTree(outputReg);
+            }
+        }
+        else
+        {
+            ret = FAIL;
+            TREE_ERROR("Node is null\n");
+        }
+    }
+    else
+    {
+        ret = FAIL;
+        TREE_ERROR("Register is null\n");
+    }
+
+    return ret;
+}
