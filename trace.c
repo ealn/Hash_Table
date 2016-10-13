@@ -26,9 +26,9 @@
 #define PARM_BUF_SIZE       256
 #define BUF_SIZE            TIME_BUF_SIZE + MESS_BUF_SIZE + COMP_BUF_SIZE + CALLER_BUF_SIZE + PARM_BUF_SIZE
 
-#define TRC_DEBUG           "DEBUG -"
-#define TRC_WARNING         "WARNING -"
-#define TRC_ERROR           "ERROR -"
+#define TRC_DEBUG           "- DEBUG   -"
+#define TRC_WARNING         "- WARNING -"
+#define TRC_ERROR           "- ERROR   -"
 
 //Trace file
 FILE * traceFile = NULL;

@@ -4,7 +4,6 @@
 *.layout
 *.o
 *.win
-*.txt
 *.vpj
 *.vpw
 *.vpwhist
