@@ -36,6 +36,10 @@ void termTrace(void);
 #define MAIN_WARNING(...)         traceDataWarning(__func__, __VA_ARGS__)
 #define MAIN_DEBUG(...)           traceDataDebug(__func__, __VA_ARGS__)
 
+#define UI_ERROR(...)             traceDataError(__func__, __VA_ARGS__)
+#define UI_WARNING(...)           traceDataWarning(__func__, __VA_ARGS__)
+#define UI_DEBUG(...)             traceDataDebug(__func__, __VA_ARGS__)
+
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"
 #endif 

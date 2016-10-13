@@ -78,7 +78,7 @@ static void getTimeStamp(char * pOutputTime)
             pLocalTime->tm_year += YEAR_OFFSET;
 
             sprintf(pOutputTime,
-                    "%i/%i/%i %i:%i:%i",
+                    "%.2i/%.2i/%.4i %.2i:%.2i:%.2i",
                     pLocalTime->tm_mday,
                     pLocalTime->tm_mon,
                     pLocalTime->tm_year,
