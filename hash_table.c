@@ -23,17 +23,17 @@
 //Structs
 struct _Register
 {
-    long   ID;
-    char   name[NAME_SIZE];
-    char   tel[TEL_SIZE];
-    char   address[ADD_SIZE];
-    char   city[CITY_SIZE];
-    Node * tree;    
+    uint32_t  ID;
+    char      name[NAME_SIZE];
+    char      tel[TEL_SIZE];
+    char      address[ADD_SIZE];
+    char      city[CITY_SIZE];
+    Node    * tree;    
 };
 
 struct _Table
 {
-    unsigned int size;
+    uint32_t     size;
     Register   * registers;
 };
 
@@ -41,14 +41,14 @@ struct _Table
 Table * g_hashTable = NULL;         //Hash table instance
 
 //Definition of static functions
-static Register * allocRegisters(unsigned int numberOfReg);
-static void allocTable(unsigned int numberOfReg);
+static Register * allocRegisters(uint32_t numberOfReg);
+static void allocTable(uint32_t numberOfReg);
 static void freeRegister(Register *pRegister);
 static void freeTable(void);
-static Register * getRegisterAtIndex(unsigned int index);
+static Register * getRegisterAtIndex(uint32_t index);
 
 //Implementation
-static Register * allocRegisters(unsigned int numberOfReg)
+static Register * allocRegisters(uint32_t numberOfReg)
 {
     Register *reg = NULL;
     
@@ -65,7 +65,7 @@ static Register * allocRegisters(unsigned int numberOfReg)
     return reg;
 }
 
-static void allocTable(unsigned int numberOfReg)
+static void allocTable(uint32_t numberOfReg)
 {
     g_hashTable = (Table *)MEMALLOC(TABLE_SIZE);
     
@@ -112,7 +112,7 @@ static void freeTable(void)
     }
 }
 
-static Register * getRegisterAtIndex(unsigned int index)
+static Register * getRegisterAtIndex(uint32_t index)
 {
     Register *reg = NULL;
     
@@ -127,9 +127,9 @@ static Register * getRegisterAtIndex(unsigned int index)
     return reg;
 }
 
-static unsigned int getHashValue(int ID)
+static uint32_t getHashValue(uint32_t ID)
 {
-    unsigned int hashValue = 0;
+    uint32_t hashValue = 0;
 
     hashValue = ID % g_hashTable->size;
 
@@ -154,9 +154,9 @@ static void printRegInfo(Register * reg)
 }
 
 // Entry points
-int createTable(void)
+int32_t createTable(void)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     allocTable(NUMBER_OF_REG);
     
@@ -179,7 +179,7 @@ void destroyTable(void)
 {
     if (g_hashTable != NULL)
     {
-        unsigned int index = 0;
+        uint32_t index = 0;
         Register * reg = NULL;
         
         // Free registers in the tree
@@ -209,10 +209,10 @@ void displayTable(void)
     //TODO: Search register into hash table
 }
 
-int insertReg(long ID, char *name, char *tel, char *address, char *city)
+int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city)
 {
-    int           ret = SUCCESS;
-    unsigned int  hashValue = 0;
+    int32_t       ret = SUCCESS;
+    uint32_t      hashValue = 0;
     Register     *reg = NULL;
 
     hashValue = getHashValue(ID);
@@ -265,13 +265,13 @@ int insertReg(long ID, char *name, char *tel, char *address, char *city)
     return ret;
 }
 
-int searchReg(long ID, unsigned int *numberOfSteps)
+int32_t searchReg(uint32_t ID, uint32_t *numberOfSteps)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     if (numberOfSteps != NULL)
     {
-        unsigned int  hashValue = 0;
+        uint32_t      hashValue = 0;
         Register     *reg = NULL;
 
         hashValue = getHashValue(ID);
@@ -338,12 +338,12 @@ int searchReg(long ID, unsigned int *numberOfSteps)
     return ret;
 }
 
-int removeReg(long ID)
+int32_t removeReg(uint32_t ID)
 {
-    int ret = SUCCESS;
-    unsigned int  hashValue = 0;
+    int32_t       ret = SUCCESS;
+    uint32_t      hashValue = 0;
     Register     *reg = NULL;
-    int           numberOfSteps = 0;
+    uint32_t      numberOfSteps = 0;
 
     hashValue = getHashValue(ID);
     reg = getRegisterAtIndex(hashValue);
@@ -386,9 +386,9 @@ int removeReg(long ID)
     return ret;
 }
 
-int destroyReg(Register *reg)
+int32_t destroyReg(Register *reg)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     if (reg != NULL)
     {
@@ -402,9 +402,9 @@ int destroyReg(Register *reg)
     return ret;
 }
 
-int cleanReg(Register *reg)
+int32_t cleanReg(Register *reg)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     if (reg != NULL)
     {
@@ -438,9 +438,9 @@ void setTreeToReg(Register *reg, Node * newTree)
     }
 }
 
-long getIDFromReg(Register *reg)
+int32_t getIDFromReg(Register *reg)
 {
-    long ret = 0L;
+    int32_t ret = 0L;
      
     if (reg != NULL)
     {

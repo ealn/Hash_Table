@@ -22,15 +22,16 @@
 #define INSERT_REG       1
 #define SEARCH_REG       2
 #define REMOVE_REG       3
-#define SHOW_TABLE       4
-#define EXIT             5
+#define CHANGE_REG       4
+#define SHOW_TABLE       5
+#define EXIT             6
 #define STDIN_BUF_SIZE   256
 
 //Definition of static functions
 static void cleanScreen(void);
-static int  showMainMenu(int *optionSelected);
-static int  showRegMenu(int action);
-static int  showTable(void);
+static int32_t  showMainMenu(uint8_t *optionSelected);
+static int32_t  showRegMenu(uint8_t action);
+static int32_t  showTable(void);
 
 static void cleanScreen(void)
 {
@@ -41,15 +42,15 @@ static void cleanScreen(void)
 #endif
 }
 
-int showUI(void)
+int32_t showUI(void)
 {
-    int ret = SUCCESS;
-    int optionSelected = 0;
-    int loop = 0;
+    int32_t ret = SUCCESS;
+    uint8_t optionSelected = 0;
+    bool loop = false;
         
     do
     {
-        loop = 0;
+        loop = false;
         
         ret = showMainMenu(&optionSelected);
     
@@ -83,19 +84,19 @@ int showUI(void)
             if ((repeat == 's' || repeat == 'S')
                 && strlen(stdinBuf) == 2)   //2 characters = 1 character + \0 (null termininator)
             {
-                loop = 1;
+                loop = true;
                 cleanScreen();
             }
         }
-    }while (loop == 1);
+    }while (loop);
     
     
     return ret;
 }
 
-static int showMainMenu(int *optionSelected)
+static int32_t showMainMenu(uint8_t *optionSelected)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     if (optionSelected != NULL)
     {
@@ -133,12 +134,12 @@ static int showMainMenu(int *optionSelected)
     return ret;
 }
 
-static int showRegMenu(int action)
+static int32_t showRegMenu(uint8_t action)
 {
-    int ret = SUCCESS;
-    long   ID = 0L; 
-    char   stdinBuf[STDIN_BUF_SIZE];
-    unsigned int numberOfSteps = 0;
+    int32_t    ret = SUCCESS;
+    uint32_t   ID = 0; 
+    char       stdinBuf[STDIN_BUF_SIZE];
+    uint32_t   numberOfSteps = 0;
        
     memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
        
@@ -214,9 +215,9 @@ static int showRegMenu(int action)
     return ret;
 }
 
-static int showTable(void)
+static int32_t showTable(void)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
     
     displayTable();
     

@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 extern "C" {
@@ -18,19 +19,19 @@ extern "C" {
 void * memAlloc(size_t size,
                 const char * func,
                 const char * file,
-                int line);
+                int32_t line);
 
 void memFree(void * ptr,
              const char * func,
              const char * file,
-             int line);
+             int32_t line);
 
 void * memRealloc(void *ptr, 
                   size_t origSize, 
                   size_t newSize,
                   const char * func,
                   const char * file,
-                  int line);
+                  int32_t line);
 
 // Macros:
 #define MEMALLOC(size)                       memAlloc((size), __func__, __FILE__, __LINE__)

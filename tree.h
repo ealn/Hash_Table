@@ -15,9 +15,9 @@ extern "C" {
 
 // Functions:
 int insertRegIntoTree(Register *baseReg, Register *newReg);
-int searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, long ID, unsigned int *numberOfSteps);
-int removeRegIntoTree(Register *reg);
-int removeIDIntoTree(Register *baseReg, int ID, int *numberOfSteps);
+int32_t searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, uint32_t ID, uint32_t *numberOfSteps);
+int32_t removeRegIntoTree(Register *reg);
+int32_t removeIDIntoTree(Register *baseReg, uint32_t ID, uint32_t *numberOfSteps);
 void destroyTree(Node * tree);
 
 #if (defined(_cplusplus) || defined(__cplusplus))

@@ -23,13 +23,13 @@ extern "C" {
 int createTable(void);
 void destroyTable(void);
 void displayTable(void);
-int insertReg(long ID, char *name, char *tel, char *address, char *city);
-int searchReg(long ID, unsigned int *numberOfSteps);
-int removeReg(long ID);
+int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city);
+int32_t searchReg(uint32_t ID, uint32_t *numberOfSteps);
+int32_t removeReg(uint32_t ID);
 int destroyReg(Register *reg);
 int cleanReg(Register *reg);
 Node * getTreeFromReg(Register *reg);
-long getIDFromReg(Register *reg);
+int32_t getIDFromReg(Register *reg);
 void setTreeToReg(Register *reg, Node * newTree);
 
 #if (defined(_cplusplus) || defined(__cplusplus))

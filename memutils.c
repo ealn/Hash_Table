@@ -16,7 +16,7 @@
 void * memAlloc(size_t size,
                 const char * func,
                 const char * file,
-                int line)
+                int32_t line)
 {
     void * ptr = NULL;
     
@@ -51,7 +51,7 @@ void * memAlloc(size_t size,
 void memFree(void * ptr,
              const char * func,
              const char * file,
-             int line)
+             int32_t line)
 {
     if (ptr != NULL)
     {
@@ -74,7 +74,7 @@ void * memRealloc(void *ptr,
                   size_t newSize,
                   const char * func,
                   const char * file,
-                  int line)
+                  int32_t line)
 {
     void * newPtr = NULL;
 

@@ -13,9 +13,9 @@
 #include "trace.h"
 #include "UI.h"
 
-int main(void)
+int32_t main(void)
 {
-    int ret = SUCCESS;
+    int32_t ret = SUCCESS;
 
     initTrace();
 
