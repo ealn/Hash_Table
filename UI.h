@@ -13,6 +13,7 @@ extern "C" {
 #endif
 
 int32_t showUI(void);
+int32_t showRegInfo(uint32_t ID, char *name, char *tel, char *address, char *city);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

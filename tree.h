@@ -14,11 +14,12 @@ extern "C" {
 #endif
 
 // Functions:
-int insertRegIntoTree(Register *baseReg, Register *newReg);
+int32_t insertRegIntoTree(Register *baseReg, Register *newReg, uint32_t * numberOfSteps);
 int32_t searchIDIntoTree(Register *baseReg, Register **ppOutputRegister, uint32_t ID, uint32_t *numberOfSteps);
-int32_t removeRegIntoTree(Register *reg);
+int32_t removeRegIntoTree(Register *reg, uint32_t * numberOfSteps);
 int32_t removeIDIntoTree(Register *baseReg, uint32_t ID, uint32_t *numberOfSteps);
 void destroyTree(Node * tree);
+int32_t showTree(Node * tree);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

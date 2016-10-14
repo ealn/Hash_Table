@@ -31,21 +31,27 @@ struct _Node
     Register * reg;
 };
 
-//Function pointers
-typedef int32_t (*NavFunction)(Node *pNode);
+//Type definitions
+typedef int32_t (*NavFunction)(Node *pNode,  uint32_t * numberOfSteps);
+
+typedef struct _NavParmBlock
+{
+    NavFunction   pNavFunction;
+    uint32_t    * numberOfSteps;
+}NavParmBlock;
 
 //Definition of static functions
 static Node * allocNode(void);
 static void freeNode(Node *pNode);
 static Node * createNode(Register *reg);
 static int32_t isTopNode(Node *pNode);
-static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavFunction pNavFunction);
-static int32_t inOrden(Node *pNode, NavFunction pNavFunction);
-static int32_t preOrden(Node *pNode, NavFunction pNavFunction);
-static int32_t postOrden(Node *pNode, NavFunction pNavFunction);
-static int32_t insertNode(Node *topNode, Node *newNode);
+static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavParmBlock * pNavParmBlock);
+static int32_t inOrden(Node *pNode, NavParmBlock * pNavParmBlock);
+static int32_t preOrden(Node *pNode, NavParmBlock * pNavParmBlock);
+static int32_t postOrden(Node *pNode, NavParmBlock * pNavParmBlock);
+static int32_t insertNode(Node *topNode, Node *newNode, uint32_t * numberOfSteps);
 static void balanceTree(Node *topNode);
-static int32_t createTree(Register *baseReg, Register *newReg);
+static int32_t createTree(Register *baseReg, Register *newReg, uint32_t * numberOfSteps);
 static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Node **ppOutputNode);
 
 //Implementation
@@ -136,7 +142,7 @@ static int32_t isTopNode(Node *pNode)
     return ret; 
 }
 
-static Node * getTopNode(Node *pNode)
+static Node * getTopNode(Node *pNode, uint32_t * numberOfSteps)
 {
     Node *topNode = NULL;
 
@@ -147,13 +153,18 @@ static Node * getTopNode(Node *pNode)
         while (topNode->parent != NULL)
         {
             topNode = topNode->parent;
+
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++;
+            }
         }
     }
 
     return topNode;
 }
 
-static Node * getLastLeftChild(Node *pNode)
+static Node * getLastLeftChild(Node *pNode, uint32_t * numberOfSteps)
 {
     Node * lastLeftChild = NULL;
 
@@ -165,6 +176,11 @@ static Node * getLastLeftChild(Node *pNode)
                && lastLeftChild->leftSide != NULL)
         {
             lastLeftChild = lastLeftChild->leftSide;
+
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++;
+            }
         }
     }
 
@@ -303,7 +319,7 @@ static int32_t removeTreeWithOneChild(Node *pNode)
     return ret;
 }
 
-static int32_t removeTreeWithTwoChilds(Node *pNode)
+static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -325,7 +341,7 @@ static int32_t removeTreeWithTwoChilds(Node *pNode)
             leftChild = pNode->leftSide;
 
             //find the last left child
-            lastLeftChild = getLastLeftChild(rightChild);
+            lastLeftChild = getLastLeftChild(rightChild, numberOfSteps);
 
             // if there is not more left childs
             if (lastLeftChild == rightChild)
@@ -365,7 +381,7 @@ static int32_t removeTreeWithTwoChilds(Node *pNode)
     return ret;
 }
 
-static int32_t removeNodeFromTree(Node *pNode)
+static int32_t removeNodeFromTree(Node *pNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -385,7 +401,7 @@ static int32_t removeNodeFromTree(Node *pNode)
         }
         else
         {
-            topNode = getTopNode(pNode); 
+            topNode = getTopNode(pNode, numberOfSteps); 
         }
 
         if (pNode->leftSide == NULL
@@ -404,7 +420,7 @@ static int32_t removeNodeFromTree(Node *pNode)
         else if (pNode->leftSide != NULL
                  && pNode->rightSide != NULL)
         {
-            ret = removeTreeWithTwoChilds(pNode);
+            ret = removeTreeWithTwoChilds(pNode, numberOfSteps);
             needBalance = 1;
         }
         else
@@ -447,20 +463,21 @@ Postorden =[6, 13, 14, 9, 17, 26, 72, 64, 20, 15]
  
 **************************************************/
 
-static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavFunction pNavFunction)
+static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavParmBlock * pNavParmBlock)
 {
     int32_t ret = SUCCESS;
 
     if (topNode != NULL
-        && pNavFunction != NULL)
+        && pNavParmBlock != NULL
+        && pNavParmBlock->pNavFunction != NULL)
     {
         switch (algorithm)
         {
-            case NAV_INORDER: ret = inOrden(topNode, pNavFunction);
+            case NAV_INORDER: ret = inOrden(topNode, pNavParmBlock);
                 break;
-            case NAV_PREORDER: ret = preOrden(topNode, pNavFunction);
+            case NAV_PREORDER: ret = preOrden(topNode, pNavParmBlock);
                 break;
-            case NAV_POSTORDER: ret = postOrden(topNode, pNavFunction);
+            case NAV_POSTORDER: ret = postOrden(topNode, pNavParmBlock);
                 break;
             default:
                 TREE_WARNING("Invalid algorithm\n");
@@ -476,26 +493,28 @@ static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavFunction pNavF
     return ret;
 }
 
-static int32_t inOrden(Node *pNode, NavFunction pNavFunction)
+static int32_t inOrden(Node *pNode, NavParmBlock * pNavParmBlock)
 {
     int32_t ret = SUCCESS;
 
-    if (pNavFunction != NULL)
+    if (pNavParmBlock != NULL
+        && pNavParmBlock->pNavFunction != NULL)
     {
         if (pNode != NULL) 
         {
             Node *leftNode = pNode->leftSide;
             Node *rightNode = pNode->rightSide;
 
-            ret = inOrden(leftNode, pNavFunction);
+            ret = inOrden(leftNode, pNavParmBlock);
 
             //TODO: break recursivity when a fails occurs
 
             TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
-            ret = pNavFunction(pNode);
+            ret = pNavParmBlock->pNavFunction(pNode, 
+                                              pNavParmBlock->numberOfSteps);
 
-            ret = inOrden(rightNode, pNavFunction);
+            ret = inOrden(rightNode, pNavParmBlock);
         }
     }
     else
@@ -507,11 +526,12 @@ static int32_t inOrden(Node *pNode, NavFunction pNavFunction)
     return ret;
 }
 
-static int32_t preOrden(Node *pNode, NavFunction pNavFunction)
+static int32_t preOrden(Node *pNode, NavParmBlock * pNavParmBlock)
 {
     int32_t ret = SUCCESS;
 
-    if (pNavFunction != NULL)
+    if (pNavParmBlock != NULL
+        && pNavParmBlock->pNavFunction != NULL)
     {
         if (pNode != NULL) 
         {
@@ -520,11 +540,12 @@ static int32_t preOrden(Node *pNode, NavFunction pNavFunction)
 
             TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
-            ret = pNavFunction(pNode);
+            ret = pNavParmBlock->pNavFunction(pNode, 
+                                              pNavParmBlock->numberOfSteps);
 
             //TODO: break recursivity when a fails occurs
-            ret = preOrden(leftNode, pNavFunction);
-            ret = preOrden(rightNode, pNavFunction);
+            ret = preOrden(leftNode, pNavParmBlock);
+            ret = preOrden(rightNode, pNavParmBlock);
         }
     }
     else
@@ -536,11 +557,12 @@ static int32_t preOrden(Node *pNode, NavFunction pNavFunction)
     return ret;
 }
 
-static int32_t postOrden(Node *pNode, NavFunction pNavFunction)
+static int32_t postOrden(Node *pNode, NavParmBlock * pNavParmBlock)
 {
     int32_t ret = SUCCESS;
 
-    if (pNavFunction != NULL)
+    if (pNavParmBlock != NULL
+        && pNavParmBlock->pNavFunction != NULL)
     {
         if (pNode != NULL) 
         {
@@ -548,12 +570,13 @@ static int32_t postOrden(Node *pNode, NavFunction pNavFunction)
             Node *rightNode = pNode->rightSide;
 
             //TODO: break recursivity when a fails occurs
-            ret = postOrden(leftNode, pNavFunction);
-            ret = postOrden(rightNode, pNavFunction);
+            ret = postOrden(leftNode, pNavParmBlock);
+            ret = postOrden(rightNode, pNavParmBlock);
 
             TREE_DEBUG("pNode->ID=%d\n",pNode->ID);
 
-            ret = pNavFunction(pNode);
+            ret = pNavParmBlock->pNavFunction(pNode, 
+                                              pNavParmBlock->numberOfSteps);
         }
     }
     else
@@ -565,7 +588,7 @@ static int32_t postOrden(Node *pNode, NavFunction pNavFunction)
     return ret;
 }
 
-static int32_t insertNode(Node *topNode, Node *newNode)
+static int32_t insertNode(Node *topNode, Node *newNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -611,6 +634,11 @@ static int32_t insertNode(Node *topNode, Node *newNode)
                 ret = FAIL;
                 TREE_ERROR("IDs repeated\n");
             }
+
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++;
+            }
         }
     }
     else
@@ -639,6 +667,11 @@ static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Nod
         while (pNode != NULL)
         {
             TREE_DEBUG("pNode->ID=%d ID=%d\n", pNode->ID, ID);
+
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++; 
+            }
 
             if (ID == pNode->ID)  //IDs are equal
             {
@@ -674,11 +707,6 @@ static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Nod
                     break;
                 }
             }
-
-            if (numberOfSteps != NULL)
-            {
-                (*numberOfSteps)++; 
-            }
         }
     }
     else
@@ -689,7 +717,7 @@ static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Nod
     return ret; 
 }
 
-static int32_t createTree(Register *baseReg, Register *newReg)
+static int32_t createTree(Register *baseReg, Register *newReg, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
     
@@ -700,7 +728,7 @@ static int32_t createTree(Register *baseReg, Register *newReg)
         Node *newNode = NULL;
         
         topTree = getTreeFromReg(baseReg);
-        
+
         //if the baseReg does not have a tree
         if (topTree == NULL)
         {
@@ -719,7 +747,7 @@ static int32_t createTree(Register *baseReg, Register *newReg)
             
             if (newNode != NULL)
             {
-                ret = insertNode(topTree, newNode);
+                ret = insertNode(topTree, newNode, numberOfSteps);
 
                 if (ret == SUCCESS)
                 {
@@ -742,7 +770,7 @@ static int32_t createTree(Register *baseReg, Register *newReg)
     return ret;
 }
 
-int32_t insertRegIntoTree(Register *baseReg, Register *newReg)
+int32_t insertRegIntoTree(Register *baseReg, Register *newReg, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -755,7 +783,7 @@ int32_t insertRegIntoTree(Register *baseReg, Register *newReg)
                    newReg,
                    getIDFromReg(baseReg));
 
-        ret = createTree(baseReg, newReg);
+        ret = createTree(baseReg, newReg, numberOfSteps);
     }
 
     return ret;
@@ -810,13 +838,15 @@ void destroyTree(Node * tree)
 {
     if (tree != NULL)
     {
-        NavFunction pNavFunction = NULL;
-        int ret;
+        NavParmBlock navParmBlock;
+        int32_t ret;
+
+        memset(&navParmBlock, 0, sizeof(NavParmBlock));
 
         //set the function removeNodeFromTree
-        pNavFunction = removeNodeFromTree;
+        navParmBlock.pNavFunction = removeNodeFromTree;
 
-        ret = navigateTree(tree, NAV_POSTORDER, pNavFunction);
+        ret = navigateTree(tree, NAV_POSTORDER, &navParmBlock);
         
         if (ret != SUCCESS)
         {
@@ -829,7 +859,7 @@ void destroyTree(Node * tree)
     }
 }
 
-int32_t removeRegIntoTree(Register *reg)
+int32_t removeRegIntoTree(Register *reg, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -841,7 +871,7 @@ int32_t removeRegIntoTree(Register *reg)
 
         if (pNode != NULL)
         {
-            ret = removeNodeFromTree(pNode);
+            ret = removeNodeFromTree(pNode, numberOfSteps);
         }
         else
         {
@@ -876,7 +906,7 @@ int32_t removeIDIntoTree(Register *baseReg, uint32_t ID, uint32_t *numberOfSteps
             if (ret == SUCCESS
                 && outputReg != NULL)
             {
-                ret = removeRegIntoTree(outputReg);
+                ret = removeRegIntoTree(outputReg, numberOfSteps);
             }
         }
         else
@@ -893,3 +923,51 @@ int32_t removeIDIntoTree(Register *baseReg, uint32_t ID, uint32_t *numberOfSteps
 
     return ret;
 }
+
+static int32_t showNode(Node *pNode, uint32_t * numberOfSteps)
+{
+    int32_t ret = SUCCESS;
+
+    if (pNode != NULL
+        && pNode->reg != NULL)
+    {
+        ret = printRegInfo(pNode->reg);
+    }
+    else
+    {
+        TREE_ERROR("Register is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+
+int32_t showTree(Node * tree)
+{
+    int32_t ret = SUCCESS;
+
+    if (tree != NULL)
+    {
+        NavParmBlock navParmBlock;
+
+        memset(&navParmBlock, 0, sizeof(NavParmBlock));
+
+        //set the function showNode
+        navParmBlock.pNavFunction = showNode;
+
+        ret = navigateTree(tree, NAV_PREORDER, &navParmBlock);
+        
+        if (ret != SUCCESS)
+        {
+            TREE_ERROR("ret=%d\n", ret);
+        }
+    }
+    else
+    {
+        TREE_ERROR("Tree is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+

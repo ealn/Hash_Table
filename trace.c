@@ -23,8 +23,14 @@
 #define MESS_BUF_SIZE       12
 #define COMP_BUF_SIZE       12
 #define CALLER_BUF_SIZE     20
+#define PARENTHESIS_SIZE     2
 #define PARM_BUF_SIZE       256
-#define BUF_SIZE            TIME_BUF_SIZE + MESS_BUF_SIZE + COMP_BUF_SIZE + CALLER_BUF_SIZE + PARM_BUF_SIZE
+#define BUF_SIZE            TIME_BUF_SIZE \
+                          + MESS_BUF_SIZE \
+                          + COMP_BUF_SIZE \
+                          + CALLER_BUF_SIZE \
+                          + PARENTHESIS_SIZE \
+                          + PARM_BUF_SIZE
 
 #define TRC_DEBUG           "- DEBUG   -"
 #define TRC_WARNING         "- WARNING -"
@@ -111,9 +117,9 @@ static void traceData(const char *pComponent,
     memset(buff, 0, sizeof(char)*BUF_SIZE);
     memset(callerBuf, 0, sizeof(char)*CALLER_BUF_SIZE);
 
-    memcpy(messageType, pMessType, sizeof(char)*MESS_BUF_SIZE);
-    memcpy(component, pComponent, sizeof(char)*COMP_BUF_SIZE);
-    memcpy(callerBuf, pCaller, sizeof(char)*(CALLER_BUF_SIZE - 2)); //the parenthesis size is 2
+    memcpy(messageType, pMessType, sizeof(char)*(MESS_BUF_SIZE - 1)); //-1 to keep the '\0' at the end
+    memcpy(component, pComponent, sizeof(char)*(COMP_BUF_SIZE - 1));  //-1 to keep the '\0' at the end
+    memcpy(callerBuf, pCaller, sizeof(char)*(CALLER_BUF_SIZE - 1));   //-1 to keep the '\0' at the end
     getTimeStamp(timeStamp);
     
     sprintf(buff,

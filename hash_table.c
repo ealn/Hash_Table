@@ -14,6 +14,7 @@
 #include "memutils.h"
 #include "tree.h"
 #include "trace.h"
+#include "UI.h"
 
 //Constants
 #define NUMBER_OF_REG       30
@@ -67,18 +68,25 @@ static Register * allocRegisters(uint32_t numberOfReg)
 
 static void allocTable(uint32_t numberOfReg)
 {
-    g_hashTable = (Table *)MEMALLOC(TABLE_SIZE);
-    
-    if (g_hashTable != NULL)
+    if (g_hashTable == NULL)
     {
-        g_hashTable->size = numberOfReg;
-        g_hashTable->registers = allocRegisters(numberOfReg);
+        g_hashTable = (Table *)MEMALLOC(TABLE_SIZE); 
+        
+        if (g_hashTable != NULL)
+        {
+            g_hashTable->size = numberOfReg;
+            g_hashTable->registers = allocRegisters(numberOfReg);
 
-        HASHTAB_DEBUG("g_hashTable=%08lx size = %d\n", g_hashTable, g_hashTable->size);
+            HASHTAB_DEBUG("g_hashTable=%08lx size = %d\n", g_hashTable, g_hashTable->size);
+        }
+        else
+        {
+            HASHTAB_ERROR("Could not be allocated the hash table\n");
+        }
     }
     else
     {
-        HASHTAB_ERROR("Could not be allocated the hash table\n");
+        HASHTAB_ERROR("Hash table is not null\n");
     }
 }
 
@@ -120,8 +128,6 @@ static Register * getRegisterAtIndex(uint32_t index)
         && index < g_hashTable->size)
     {
         reg = g_hashTable->registers + index;
-
-        HASHTAB_DEBUG("reg->ID=%d\n", reg->ID); 
     }
     
     return reg;
@@ -136,21 +142,42 @@ static uint32_t getHashValue(uint32_t ID)
     return hashValue;
 }
 
-static void printRegInfo(Register * reg)
+static void insertInfoIntoReg(Register * reg,
+                              uint32_t ID,
+                              char *name, 
+                              char *tel, 
+                              char *address, 
+                              char *city)
 {
     if (reg != NULL)
     {
-        printf("\n\n         **** Informacion del Registro ****\n\n");
-        printf("ID: %d\n",      reg->ID);
-        printf("Name: %s",    reg->name);
-        printf("Tel: %s",     reg->tel);
-        printf("Address: %s", reg->address);
-        printf("City: %s\n",  reg->city);
+        reg->ID = ID;
+        memcpy(reg->name, name, sizeof(char) * (NAME_SIZE - 1));      //-1 to keep the '\0' at the end
+        memcpy(reg->tel, tel, sizeof(char) * (TEL_SIZE - 1));         //-1 to keep the '\0' at the end
+        memcpy(reg->address, address, sizeof(char) * (ADD_SIZE - 1)); //-1 to keep the '\0' at the end
+        memcpy(reg->city, city, sizeof(char) * (CITY_SIZE - 1));      //-1 to keep the '\0' at the end
+    }
+}
+
+int32_t printRegInfo(Register * reg)
+{
+    int32_t ret = SUCCESS;
+
+    if (reg != NULL)
+    {
+        //ignore the empty registers
+        if (reg->ID != 0)
+        {
+            ret = showRegInfo(reg->ID, reg->name, reg->tel, reg->address, reg->city); 
+        }
     }
     else
     {
         HASHTAB_ERROR("Register is null\n");
+        ret = FAIL;
     }
+
+    return ret;
 }
 
 // Entry points
@@ -200,16 +227,47 @@ void destroyTable(void)
     }
     else
     {
-        HASHTAB_WARNING("Hash table is null\n");
+        HASHTAB_ERROR("Hash table is null\n");
     }
 }
 
-void displayTable(void)
+int32_t displayTable(void)
 {
-    //TODO: Search register into hash table
+    int32_t ret = SUCCESS;
+
+    if (g_hashTable != NULL)
+    {
+        uint32_t index = 0;
+        Register * reg = NULL;
+        
+        // Free registers in the tree
+        while (index < g_hashTable->size)
+        {
+            reg = getRegisterAtIndex(index);
+
+            if (reg != NULL
+                && reg->tree != NULL)
+            {
+                ret = showTree(reg->tree);
+            }
+            else
+            {
+                ret = printRegInfo(reg);
+            }
+
+            index++; 
+        }
+    }
+    else
+    {
+        HASHTAB_ERROR("Hash table is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
 }
 
-int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city)
+int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city, uint32_t * numberOfSteps)
 {
     int32_t       ret = SUCCESS;
     uint32_t      hashValue = 0;
@@ -225,17 +283,18 @@ int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city)
                       reg->ID, 
                       reg->tree);
 
+        if (numberOfSteps != NULL)
+        {
+           *numberOfSteps = 1;
+        }
+
         //if the register is empty
         if (reg->ID == 0)
         {
             HASHTAB_DEBUG("Empty slot found\n");
 
             //copy the information
-            reg->ID = ID;
-            memcpy(reg->name, name, sizeof(char) * NAME_SIZE);
-            memcpy(reg->tel, tel, sizeof(char) * TEL_SIZE);
-            memcpy(reg->address, address, sizeof(char) * ADD_SIZE);
-            memcpy(reg->city, city, sizeof(char) * CITY_SIZE);
+            insertInfoIntoReg(reg, ID, name, tel, address, city);
         }
         else   //there is a collision
         {
@@ -247,19 +306,16 @@ int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city)
             newReg = allocRegisters(1);
 
             //copy the information
-            newReg->ID = ID;
-            memcpy(newReg->name, name, sizeof(char) * NAME_SIZE);
-            memcpy(newReg->tel, tel, sizeof(char) * TEL_SIZE);
-            memcpy(newReg->address, address, sizeof(char) * ADD_SIZE);
-            memcpy(newReg->city, city, sizeof(char) * CITY_SIZE);
+            insertInfoIntoReg(newReg, ID, name, tel, address, city);
 
             //Insert the new register into tree
-            insertRegIntoTree(reg, newReg);
+            ret = insertRegIntoTree(reg, newReg, numberOfSteps);
         }
     }
     else
     {
-        HASHTAB_ERROR("Register was not found\n");
+        HASHTAB_ERROR("Register is null\n");
+        ret = FAIL;
     }
     
     return ret;
@@ -268,82 +324,8 @@ int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city)
 int32_t searchReg(uint32_t ID, uint32_t *numberOfSteps)
 {
     int32_t ret = SUCCESS;
-    
-    if (numberOfSteps != NULL)
-    {
-        uint32_t      hashValue = 0;
-        Register     *reg = NULL;
-
-        hashValue = getHashValue(ID);
-        reg = getRegisterAtIndex(hashValue);
-
-        if (reg != NULL)
-        {
-            *numberOfSteps = 1;
-
-            HASHTAB_DEBUG("hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
-                          hashValue, 
-                          reg->ID, 
-                          ID, 
-                          reg->tree);
-
-            if (reg->ID == ID)   //if the IDs are equals
-            {
-                HASHTAB_DEBUG("Register was found with the hash value\n");
-
-                //register found, print information
-                printRegInfo(reg);
-            }
-            else if (reg->tree != NULL)  //if this register has a tree
-            {
-                Register * outputReg = NULL;
-
-                HASHTAB_DEBUG("Search register in the tree\n");
-
-                //search register into tree
-                ret = searchIDIntoTree(reg, &outputReg, ID, numberOfSteps);
-
-                //if the register was found
-                if (ret == SUCCESS
-                    && outputReg != NULL)
-                {
-                    //print information
-                    printRegInfo(outputReg);
-                }
-                else
-                {
-                    //register was not found
-                    HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
-                    ret = FAIL;
-                }
-            }
-            else
-            {
-                //register was not found
-                HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
-                ret = FAIL;
-            }
-        }
-        else
-        {
-            HASHTAB_ERROR("Register was not found\n");
-        }
-    }
-    else
-    {
-        HASHTAB_ERROR("Number of steps is null\n");
-        ret = FAIL;
-    }
-
-    return ret;
-}
-
-int32_t removeReg(uint32_t ID)
-{
-    int32_t       ret = SUCCESS;
     uint32_t      hashValue = 0;
     Register     *reg = NULL;
-    uint32_t      numberOfSteps = 0;
 
     hashValue = getHashValue(ID);
     reg = getRegisterAtIndex(hashValue);
@@ -355,6 +337,78 @@ int32_t removeReg(uint32_t ID)
                       reg->ID, 
                       ID, 
                       reg->tree);
+
+        if (numberOfSteps != NULL)
+        {
+            *numberOfSteps = 1;
+        }
+
+        if (reg->ID == ID)   //if the IDs are equals
+        {
+            HASHTAB_DEBUG("Register was found with the hash value\n");
+
+            //register found, print information
+            printRegInfo(reg);
+        }
+        else if (reg->tree != NULL)  //if this register has a tree
+        {
+            Register * outputReg = NULL;
+
+            HASHTAB_DEBUG("Search register in the tree\n");
+
+            //search register into tree
+            ret = searchIDIntoTree(reg, &outputReg, ID, numberOfSteps);
+
+            //if the register was found
+            if (ret == SUCCESS
+                && outputReg != NULL)
+            {
+                //print information
+                printRegInfo(outputReg);
+            }
+            else
+            {
+                //register was not found
+                HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
+            }
+        }
+        else
+        {
+            //register was not found
+            HASHTAB_WARNING("Register with ID=%d was not found\n", ID);
+            ret = REG_NOT_FOUND;
+        }
+    }
+    else
+    {
+        HASHTAB_ERROR("Register is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+
+int32_t removeReg(uint32_t ID, uint32_t *numberOfSteps)
+{
+    int32_t       ret = SUCCESS;
+    uint32_t      hashValue = 0;
+    Register     *reg = NULL;
+
+    hashValue = getHashValue(ID);
+    reg = getRegisterAtIndex(hashValue);
+
+    if (reg != NULL)
+    {
+        HASHTAB_DEBUG("hashValue=%d reg->ID=%d ID=%d reg->tree=%08lx\n", 
+                      hashValue, 
+                      reg->ID, 
+                      ID, 
+                      reg->tree);
+
+        if (numberOfSteps != NULL)
+        {
+            *numberOfSteps = 1;
+        }
 
         if (reg->ID == ID)   //if the IDs are equals
         {
@@ -369,18 +423,40 @@ int32_t removeReg(uint32_t ID)
             else
             {
                 //remove top node
-                ret = removeRegIntoTree(reg);
+                ret = removeRegIntoTree(reg, numberOfSteps);
             }
         }
         else if (reg->tree != NULL)  //if this register has a tree
         {
             //search register into tree
-            ret = removeIDIntoTree(reg, ID, &numberOfSteps);
+            ret = removeIDIntoTree(reg, ID, numberOfSteps);
         }
     }
     else
     {
-        HASHTAB_ERROR("Register was not found\n");
+        HASHTAB_ERROR("Register is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+
+int32_t changeReg(uint32_t ID, uint32_t *numberOfSteps)
+{
+    int32_t ret = SUCCESS;
+    uint32_t      hashValue = 0;
+    Register     *reg = NULL;
+
+    hashValue = getHashValue(ID);
+    reg = getRegisterAtIndex(hashValue);
+
+    if (reg != NULL)
+    {
+    }
+    else
+    {
+        HASHTAB_ERROR("Register is null\n");
+        ret = FAIL;
     }
 
     return ret;
@@ -397,6 +473,7 @@ int32_t destroyReg(Register *reg)
     else
     {
         HASHTAB_WARNING("Register is null\n");
+        ret = FAIL;
     }
 
     return ret;
@@ -413,6 +490,7 @@ int32_t cleanReg(Register *reg)
     else
     {
         HASHTAB_WARNING("Register is null\n");
+        ret = FAIL;
     }
 
     return ret;
