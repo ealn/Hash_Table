@@ -11,5 +11,5 @@ Hash_value = (ID % N)
 
 Where:
 
-ID: Idenficator for a register in the table
+ID: Identifier for a register in the table
 N:  Hash table size
