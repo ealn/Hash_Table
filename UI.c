@@ -14,10 +14,7 @@
 #include "hash_table.h"
 #include "trace.h"
 #include "memutils.h"
-
-// Macros to select the OS to be used
-#define WINDOWS
-//#define UNIX
+#include "console_utils.h"
 
 //Constanst
 #define INSERT_REG            1
@@ -26,16 +23,22 @@
 #define CHANGE_REG            4
 #define SHOW_TABLE            5
 #define EXIT                  6
-#define STDIN_BUF_SIZE        256
+
 #define SHOW_FULL_TABLE       1
 #define SHOW_SUMMARY_TABLE    2
 #define SEND_TO_CONSOLE       1
 #define SEND_TO_FILE          2
+
 #define OUTPUT_FILE_SIZE      20
 #define REG_BUF_SIZE          256
 
+#define CHANGE_NAME           1
+#define CHANGE_TEL            2
+#define CHANGE_ADDRESS        3
+#define CHANGE_CITY           4
+#define CHANGE_ALL            5
+
 //Definition of static functions
-static void cleanScreen(void);
 static int32_t  showMainMenu(uint8_t *optionSelected);
 static void getRegInfo(uint32_t * pID,
                        char * pName,
@@ -46,7 +49,8 @@ static int32_t showInsertRegMenu(void);
 static int32_t showSearchRegMenu(void);
 static int32_t showRemoveRegMenu(void);
 static int32_t showChangeRegMenu(void);
-static int32_t showTable(void);
+static int32_t showTableView(void);
+static int32_t printInfoInTableView(char *str);
 
 //Type definitions
 typedef struct _TableView
@@ -59,13 +63,13 @@ typedef struct _TableView
 //global variables
 TableView * g_tableView = NULL;
 
-static void cleanScreen(void)
+static void setDefaultValuesOfTableView()
 {
-#if defined(WINDOWS)
-    system("cls");
-#elif defined(UNIX) 
-    system("clear");
-#endif
+    if (g_tableView != NULL)
+    {
+        g_tableView->view = SHOW_FULL_TABLE;
+        g_tableView->output = SEND_TO_CONSOLE;
+    }
 }
 
 static void createTableView(void)
@@ -74,7 +78,11 @@ static void createTableView(void)
     {
         g_tableView = MEMALLOC(sizeof(TableView));
 
-        if (g_tableView == NULL)
+        if (g_tableView != NULL)
+        {
+            setDefaultValuesOfTableView();
+        }
+        else
         {
             UI_ERROR("Table view could not be allocated\n");
         }
@@ -120,25 +128,18 @@ int32_t showUI(void)
                 break;
             case CHANGE_REG: ret = showChangeRegMenu();
                 break;
-            case SHOW_TABLE: ret = showTable();
+            case SHOW_TABLE: ret = showTableView();
                 break;
             default: break;
         }
         
         if (optionSelected != EXIT)
         {
-            char stdinBuf[STDIN_BUF_SIZE];
-            char repeat;
-    
-            memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
-    
-            printf("Deseas realizar otra operacion [s,n]: ");
-            fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-            
-            repeat = stdinBuf[0];
+            char repeat = 0;
 
-            if ((repeat == 's' || repeat == 'S')
-                && strlen(stdinBuf) == 2)   //2 characters = 1 character + \0 (null termininator)
+            repeat = getFirstCharFromConsole("\nDeseas realizar otra operacion [s,n]: ");
+
+            if (repeat == 's' || repeat == 'S')
             {
                 loop = true;
                 cleanScreen();
@@ -154,13 +155,10 @@ int32_t showUI(void)
 static int32_t showMainMenu(uint8_t *optionSelected)
 {
     int32_t ret = SUCCESS;
-    
+    bool    isValidOption = true;
+
     if (optionSelected != NULL)
     {
-        char stdinBuf[STDIN_BUF_SIZE];
-        
-        memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
-        
         do 
         {
           printf("\n                    ******* HASH TABLE *******\n\n");
@@ -171,23 +169,18 @@ static int32_t showMainMenu(uint8_t *optionSelected)
           printf("4.- Cambiar un registro\n");
           printf("5.- Mostrar la tabla\n");
           printf("6.- Salir\n\n");
-          printf("Opcion Seleccionada: ");
-          fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-          
-          *optionSelected = atoi(stdinBuf);
+
+          *optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
           
           UI_DEBUG("optionSelected=%i\n", *optionSelected);
 
-          if (*optionSelected < INSERT_REG || *optionSelected > EXIT)
-          {
-              printf("\nOpcion invalida\n");
-              getchar();
-              cleanScreen();
-          }
-        }while (*optionSelected < INSERT_REG || *optionSelected > EXIT);
+          isValidOption = validateIntInput(*optionSelected, INSERT_REG, EXIT, true);
+
+        }while (isValidOption == false);
     }
     else
     {
+        UI_ERROR("optionSelected is null");
         ret = FAIL;
     }
     
@@ -219,44 +212,29 @@ static void getRegInfo(uint32_t * pID,
                        char * pAddress,
                        char * pCity)
 {
-    char stdinBuf[STDIN_BUF_SIZE];
-
-    memset(&stdinBuf, 0, sizeof(char)*STDIN_BUF_SIZE);
-
-    //prevent buffer overflows with the variable stdinBuf
     if (pID != NULL)
     {
-        printf("ID: "); 
-        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-        *pID = atoi(stdinBuf);
+        *pID = getUInt32FromConsole("ID: "); 
     }
     
     if (pName != NULL)
     {
-        printf("Name: "); 
-        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-        memcpy(pName, stdinBuf, sizeof(char)*(NAME_SIZE - 1)); //-1 to keep the '\0' at the end
+        getStringFromConsole("Nombre: ", pName, (NAME_SIZE - 1)); 
     }
     
     if (pTel != NULL)
     {
-        printf("Telephone: "); 
-        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-        memcpy(pTel, stdinBuf, sizeof(char)*(TEL_SIZE - 1)); //-1 to keep the '\0' at the end
+        getStringFromConsole("Telefono: ", pTel, (TEL_SIZE - 1));
     }
     
     if (pAddress != NULL)
     {
-        printf("Address: "); 
-        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-        memcpy(pAddress, stdinBuf, sizeof(char)*(ADD_SIZE - 1)); //-1 to keep the '\0' at the end
+        getStringFromConsole("Direccion: ", pAddress, (ADD_SIZE - 1));
     }
     
     if (pCity != NULL)
     {
-        printf("City: "); 
-        fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-        memcpy(pCity, stdinBuf, sizeof(char)*(CITY_SIZE - 1)); //-1 to keep the '\0' at the end
+        getStringFromConsole("Ciudad: ", pCity, (CITY_SIZE - 1)); 
     }
 }
 
@@ -282,7 +260,7 @@ static int32_t showInsertRegMenu(void)
     
     getRegInfo(&ID, name, tel, address, city);
     
-    UI_DEBUG(" Insert register:\nID: %d \nname: %stel: %saddress: %scity: %s\n",
+    UI_DEBUG(" Insert register:\nID: %d \nname: %s\ntel: %s\naddress: %s\ncity: %s\n",
              ID,
              name,
              tel,
@@ -359,16 +337,14 @@ static int32_t showChangeRegMenu(void)
     return ret;
 }
 
-static int32_t showTable(void)
+static int32_t showTableView(void)
 {
     int32_t     ret = SUCCESS;
     uint32_t    optionSelected = 0;
-    char        stdinBuf[STDIN_BUF_SIZE];
+    bool        isValidOption = true;
 
     if (g_tableView != NULL)
     {
-        memset(&stdinBuf, 0, sizeof(char) * STDIN_BUF_SIZE); 
-
         do
         {
             cleanScreen();
@@ -377,27 +353,22 @@ static int32_t showTable(void)
             printf("Donde deseas que se muestre la tabla: \n\n");
             printf("1.- Mostrar en la Consola \n");
             printf("2.- Enviar a un archivo \n\n");
-            printf("Opcion Seleccionada: ");
-            fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-            optionSelected = atoi(stdinBuf);
 
-            if (optionSelected < SEND_TO_CONSOLE || optionSelected > SEND_TO_FILE)
-            {
-                printf("\nOpcion invalida\n");
-                getchar();
-                cleanScreen();
-            }
-            else
+            optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
+            isValidOption = validateIntInput(optionSelected, SEND_TO_CONSOLE, SEND_TO_FILE, true);
+
+            if (isValidOption)
             {
                 g_tableView->output = optionSelected;
+                UI_DEBUG("Table output option = %d\n", g_tableView->output);
             }
-        }while (optionSelected < SEND_TO_CONSOLE || optionSelected > SEND_TO_FILE);
+        }while (isValidOption == false);
 
         if (g_tableView->output == SEND_TO_FILE)
         {
-            printf("Nombre del archivo de salida: "); 
-            fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-            memcpy(g_tableView->outputFile, stdinBuf, sizeof(char)*(OUTPUT_FILE_SIZE - 1)); //-1 to keep the '\0' at the end
+            getStringFromConsole("Nombre del archivo de salida: ",
+                                 g_tableView->outputFile,
+                                 (OUTPUT_FILE_SIZE - 1)); 
         }
 
         do
@@ -408,23 +379,32 @@ static int32_t showTable(void)
             printf("Como deseas que se muestre la tabla: \n\n");
             printf("1.- Completa \n");
             printf("2.- Resumida \n\n");
-            printf("Opcion Seleccionada: ");
-            fgets(stdinBuf, STDIN_BUF_SIZE, stdin);
-            optionSelected = atoi(stdinBuf);
 
-            if (optionSelected < SHOW_FULL_TABLE || optionSelected > SHOW_SUMMARY_TABLE)
-            {
-                printf("\nOpcion invalida\n");
-                getchar();
-                cleanScreen();
-            }
-            else
+            optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
+            isValidOption = validateIntInput(optionSelected, SHOW_FULL_TABLE, SHOW_SUMMARY_TABLE, true);
+
+            if (isValidOption)
             {
                 g_tableView->view = optionSelected;
+                UI_DEBUG("Table view option = %d\n", g_tableView->output);
             }
-        }while (optionSelected < SHOW_FULL_TABLE || optionSelected > SHOW_SUMMARY_TABLE);
+        }while (isValidOption == false);
 
-        ret = displayTable();
+        if (g_tableView->output == SEND_TO_CONSOLE)
+        {
+            cleanScreen(); 
+        }
+
+        if (g_tableView->view == SHOW_SUMMARY_TABLE)
+        {
+            ret = printInfoInTableView("Indice\tNivel\tID\tNombre\n\n");
+        }
+
+        if (ret == SUCCESS)
+        {
+            ret = displayTable(); 
+            setDefaultValuesOfTableView();
+        }
     }
     else
     {
@@ -436,7 +416,7 @@ static int32_t showTable(void)
     return ret;
 }
 
-static int32_t showReg(char *str)
+static int32_t printInfoInTableView(char *str)
 {
     int32_t  ret = SUCCESS;
     FILE    *pFile = NULL;
@@ -485,7 +465,13 @@ static int32_t showReg(char *str)
     return ret;
 }
 
-int32_t showRegInfo(uint32_t ID, char *pName, char *pTel, char *pAddress, char *pCity)
+int32_t showRegInfo(uint32_t hashValue,
+                    uint32_t treeLevel,
+                    uint32_t ID,
+                    char *pName, 
+                    char *pTel, 
+                    char *pAddress, 
+                    char *pCity)
 {
     int32_t ret = SUCCESS;
     char regBuf[REG_BUF_SIZE];
@@ -504,7 +490,9 @@ int32_t showRegInfo(uint32_t ID, char *pName, char *pTel, char *pAddress, char *
             if (g_tableView->view == SHOW_FULL_TABLE)
             {
                 sprintf(regBuf,
-                        "ID:%d\nName: %sTel: %sAddress: %sCity: %s\n", 
+                        "\nIndice #%d\t Nivel en el arbol: %d\nID:%d\nNombre: %s\nTel: %s\nDireccion: %s\nCiudad: %s\n\n",
+                        hashValue,
+                        treeLevel,
                         ID, 
                         pName,
                         pTel,
@@ -513,10 +501,10 @@ int32_t showRegInfo(uint32_t ID, char *pName, char *pTel, char *pAddress, char *
             }
             else if (g_tableView->view == SHOW_SUMMARY_TABLE)
             {
-                sprintf(regBuf, "%d\t\t%s", ID, pName);
+                sprintf(regBuf, "%d\t%d\t%d\t%s\n", hashValue, treeLevel, ID, pName);
             }
 
-            showReg(regBuf);
+            printInfoInTableView(regBuf);
         }
         else
         {
@@ -531,4 +519,74 @@ int32_t showRegInfo(uint32_t ID, char *pName, char *pTel, char *pAddress, char *
     }
 
     return ret; 
+}
+
+int32_t changeFieldsOfReg(char *pName,
+                          char *pTel,
+                          char *pAddress,
+                          char *pCity)
+{
+    int32_t ret = SUCCESS;
+    uint8_t optionSelected = 0;
+    bool    isValidOption = true;
+
+    if (pName != NULL
+        && pTel != NULL
+        && pAddress != NULL
+        && pCity != NULL)
+    {
+        UI_DEBUG("Original fields: name:%s tel:%s address:%s city:%s",
+                 pName,
+                 pTel,
+                 pAddress,
+                 pCity);
+
+        do 
+        {
+          printf("\nSelecciona el campo que quieres modificar:\n\n");
+          printf("1.- Nombre\n");
+          printf("2.- Telefono\n");
+          printf("3.- Direccion\n");
+          printf("4.- Ciudad\n");
+
+          optionSelected = getUint8FromConsole("\nOpcion Seleccionada: ");
+          
+          UI_DEBUG("optionSelected=%i\n", optionSelected);
+
+          isValidOption = validateIntInput(optionSelected, CHANGE_NAME, CHANGE_CITY, true);
+
+        }while (isValidOption == false);
+
+        printf("\nEscribe el nuevo valor del\n");
+
+        switch (optionSelected)
+        {
+            case CHANGE_NAME:    getRegInfo(NULL, pName, NULL, NULL, NULL);
+                break;
+            case CHANGE_TEL:     getRegInfo(NULL, NULL, pTel, NULL, NULL);
+                break;
+            case CHANGE_ADDRESS: getRegInfo(NULL, NULL, NULL, pAddress, NULL);
+                break;
+            case CHANGE_CITY:    getRegInfo(NULL, NULL, NULL, NULL, pCity);
+                break;
+            case CHANGE_ALL:     getRegInfo(NULL, pName, pTel, pAddress, pCity);
+                break;
+            default: break;
+        }
+
+        printf("\n");
+
+        UI_DEBUG("New fields: name:%s tel:%s address:%s city:%s",
+                 pName,
+                 pTel,
+                 pAddress,
+                 pCity);
+    }
+    else
+    {
+        UI_ERROR("At least one parameter is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
 }

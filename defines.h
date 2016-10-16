@@ -20,10 +20,10 @@ typedef struct _Table Table;
 typedef struct _Node Node;
 
 // Macros
-#define SUCCESS          0
-#define FAIL            -1
-#define REG_NOT_FOUND   -2
-#define REG_DUPLICATED  -3
+#define SUCCESS                0
+#define FAIL                  -1
+#define REG_NOT_FOUND         -2
+#define REG_DUPLICATED        -3
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

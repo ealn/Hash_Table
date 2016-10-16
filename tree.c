@@ -25,6 +25,7 @@
 struct _Node
 {
     uint32_t   ID;
+    uint32_t   level;
     Node     * parent;
     Node     * leftSide;
     Node     * rightSide;
@@ -105,20 +106,28 @@ static void destroyNode(Node * pNode)
 {
     if (pNode != NULL)
     {
-        Register * reg = pNode->reg;
+        Register * reg = NULL;
 
-        TREE_DEBUG("pNode->ID=%d pNode->parent=%08lx\n", pNode->ID, pNode->parent);
+        reg = pNode->reg;
 
-        //if this node was the top node
-        if (isTopNode(pNode))
+        TREE_DEBUG("pNode->ID=%d pNode->parent=%08lx pNode->reg=%08lx\n", 
+                   pNode->ID, 
+                   pNode->parent,
+                   pNode->reg);
+
+        if (reg != NULL)
         {
-            //Just clean the register
-            cleanReg(reg);
-        }
-        else
-        {
-            //release the register
-            destroyReg(reg);
+            //if this node was the top node
+            if (isTopNode(pNode))
+            {
+                //Just clean the register
+                cleanReg(reg);
+            }
+            else
+            {
+                //release the register
+                destroyReg(reg);
+            }
         }
 
         freeNode(pNode);
@@ -206,6 +215,17 @@ static void replaceNode(Node *pNode, Node *pNewNode)
             {
                 parent->rightSide = pNewNode;
             }
+        }
+
+        pNewNode->level = pNode->level;
+
+        if (isTopNode(pNode))
+        {
+            //deteach register from top node
+            copyRegister(pNode->reg, pNewNode->reg);
+            destroyReg(pNewNode->reg);
+            pNewNode->reg = pNode->reg;
+            pNode->reg = NULL;
         }
 
         // Set pointers to NULL except the pointer to
@@ -348,6 +368,7 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
             {
                 replaceNode(pNode, lastLeftChild);
                 lastLeftChild->leftSide = leftChild;
+                leftChild->parent = lastLeftChild;
             }
             else
             {
@@ -362,6 +383,8 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
                 replaceNode(pNode, lastLeftChild);
                 lastLeftChild->leftSide = leftChild;
                 lastLeftChild->rightSide = rightChild;
+                leftChild->parent = lastLeftChild;
+                rightChild->parent = lastLeftChild;
             }
 
             destroyNode(pNode); 
@@ -601,6 +624,11 @@ static int32_t insertNode(Node *topNode, Node *newNode, uint32_t * numberOfSteps
         {
             TREE_DEBUG("newNode->ID=%d pNode->ID=%d\n", newNode->ID, pNode->ID);
 
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++;
+            }
+
             if (newNode->ID < pNode->ID)
             {
                 if (pNode->leftSide != NULL)
@@ -612,6 +640,7 @@ static int32_t insertNode(Node *topNode, Node *newNode, uint32_t * numberOfSteps
                     //position found
                     pNode->leftSide = newNode;
                     newNode->parent = pNode;
+                    newNode->level = pNode->level + 1;
                     break;
                 }
             }
@@ -626,18 +655,15 @@ static int32_t insertNode(Node *topNode, Node *newNode, uint32_t * numberOfSteps
                     //position found
                     pNode->rightSide = newNode;
                     newNode->parent = pNode;
+                    newNode->level = pNode->level + 1;
                     break;
                 }
             }
             else  //IDs are equal
             {
-                ret = FAIL;
+                ret = REG_DUPLICATED;
                 TREE_ERROR("IDs repeated\n");
-            }
-
-            if (numberOfSteps != NULL)
-            {
-                (*numberOfSteps)++;
+                break;
             }
         }
     }
@@ -689,7 +715,7 @@ static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Nod
                 {
                     //ID was not found
                     TREE_ERROR("ID was not found\n");
-                    ret = FAIL;
+                    ret = REG_NOT_FOUND;
                     break;
                 }
             }
@@ -703,7 +729,7 @@ static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Nod
                 {
                     //ID was not found
                     TREE_ERROR("ID was not found\n");
-                    ret = FAIL;
+                    ret = REG_NOT_FOUND;
                     break;
                 }
             }
@@ -971,3 +997,14 @@ int32_t showTree(Node * tree)
     return ret;
 }
 
+uint32_t getNodeLevel(Node * pNode)
+{
+    uint32_t level = 0;
+
+    if (pNode != NULL)
+    {
+        level = pNode->level;
+    }
+
+    return level;
+}

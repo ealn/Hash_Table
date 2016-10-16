@@ -13,7 +13,17 @@ extern "C" {
 #endif
 
 int32_t showUI(void);
-int32_t showRegInfo(uint32_t ID, char *name, char *tel, char *address, char *city);
+int32_t showRegInfo(uint32_t hashValue,
+                    uint32_t treeLevel,
+                    uint32_t ID,
+                    char *pName, 
+                    char *pTel, 
+                    char *pAddress, 
+                    char *pCity);
+int32_t changeFieldsOfReg(char *pName,
+                          char *pTel,
+                          char *pAddress,
+                          char *pCity);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

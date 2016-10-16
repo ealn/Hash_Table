@@ -33,6 +33,7 @@ Node * getTreeFromReg(Register *reg);
 int32_t getIDFromReg(Register *reg);
 void setTreeToReg(Register *reg, Node * newTree);
 int32_t printRegInfo(Register * reg);
+void copyRegister(Register *destination, Register *source);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

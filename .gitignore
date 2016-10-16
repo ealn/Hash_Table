@@ -8,4 +8,6 @@
 *.vpw
 *.vpwhist
 *.vtg
+log.txt
+out.txt
 Debug
