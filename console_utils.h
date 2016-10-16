@@ -20,4 +20,5 @@ void getStringFromConsole(char *consoleStr, char *outputStr, uint32_t maxSize);
 char getFirstCharFromConsole(char *consoleStr);
 bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, bool needCleanScreen);
 void cleanScreen(void);
+bool repeatAction(char *str);
 

@@ -186,3 +186,48 @@ bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, boo
     return isValid;
 }
 
+bool repeatAction(char *str)
+{
+    bool repeat = false;
+    bool loop = false;
+    char inputChar = 0;
+    char inputStr[8];
+
+    do
+    {
+        loop = false;
+
+        memset(inputStr, 0, sizeof(char)*8);
+        getStringFromConsole(str, inputStr, 8); 
+        inputChar = inputStr[0];
+
+        if (strlen(inputStr) == 1)   //1 character
+        {
+            if ((inputChar == 's' || inputChar == 'S')
+                || (inputChar == 'n' || inputChar == 'N'))
+            {
+                if (inputChar == 's' || inputChar == 'S') 
+                {
+                    repeat = true;
+                }
+            }
+            else
+            {
+                printf("\nEntrada invalida\n");
+                //waiting for a key input
+                getchar();
+                loop = true;
+            }
+        }
+        else
+        {
+            printf("\nEntrada invalida\n");
+            //waiting for a key input
+            getchar();
+            loop = true;
+        }
+    }
+    while (loop);
+
+    return repeat;
+}

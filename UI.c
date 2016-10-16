@@ -106,13 +106,14 @@ int32_t showUI(void)
 {
     int32_t ret = SUCCESS;
     uint8_t optionSelected = 0;
-    bool loop = false;
+    bool repeat = false;
         
     createTableView();
 
     do
     {
-        loop = false;
+        repeat = false;
+        cleanScreen();
         
         ret = showMainMenu(&optionSelected);
     
@@ -135,17 +136,9 @@ int32_t showUI(void)
         
         if (optionSelected != EXIT)
         {
-            char repeat = 0;
-
-            repeat = getFirstCharFromConsole("\nDeseas realizar otra operacion [s,n]: ");
-
-            if (repeat == 's' || repeat == 'S')
-            {
-                loop = true;
-                cleanScreen();
-            }
+            repeat = repeatAction("\nDeseas realizar otra operacion [s,n]: ");
         }
-    }while (loop);
+    }while (repeat);
     
     destroyTableView();
 
@@ -171,12 +164,10 @@ static int32_t showMainMenu(uint8_t *optionSelected)
           printf("6.- Salir\n\n");
 
           *optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
-          
-          UI_DEBUG("optionSelected=%i\n", *optionSelected);
-
           isValidOption = validateIntInput(*optionSelected, INSERT_REG, EXIT, true);
+        }while (!isValidOption);
 
-        }while (isValidOption == false);
+        UI_DEBUG("optionSelected=%i\n", *optionSelected);
     }
     else
     {
@@ -356,13 +347,10 @@ static int32_t showTableView(void)
 
             optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
             isValidOption = validateIntInput(optionSelected, SEND_TO_CONSOLE, SEND_TO_FILE, true);
+        }while (!isValidOption);
 
-            if (isValidOption)
-            {
-                g_tableView->output = optionSelected;
-                UI_DEBUG("Table output option = %d\n", g_tableView->output);
-            }
-        }while (isValidOption == false);
+        g_tableView->output = optionSelected;
+        UI_DEBUG("Table output option = %d\n", g_tableView->output);
 
         if (g_tableView->output == SEND_TO_FILE)
         {
@@ -382,13 +370,10 @@ static int32_t showTableView(void)
 
             optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
             isValidOption = validateIntInput(optionSelected, SHOW_FULL_TABLE, SHOW_SUMMARY_TABLE, true);
+        }while (!isValidOption);
 
-            if (isValidOption)
-            {
-                g_tableView->view = optionSelected;
-                UI_DEBUG("Table view option = %d\n", g_tableView->output);
-            }
-        }while (isValidOption == false);
+        g_tableView->view = optionSelected;
+        UI_DEBUG("Table view option = %d\n", g_tableView->output);
 
         if (g_tableView->output == SEND_TO_CONSOLE)
         {
@@ -529,6 +514,7 @@ int32_t changeFieldsOfReg(char *pName,
     int32_t ret = SUCCESS;
     uint8_t optionSelected = 0;
     bool    isValidOption = true;
+    bool    repeat = false;
 
     if (pName != NULL
         && pTel != NULL
@@ -541,40 +527,45 @@ int32_t changeFieldsOfReg(char *pName,
                  pAddress,
                  pCity);
 
-        do 
+        do
         {
-          printf("\nSelecciona el campo que quieres modificar:\n\n");
-          printf("1.- Nombre\n");
-          printf("2.- Telefono\n");
-          printf("3.- Direccion\n");
-          printf("4.- Ciudad\n");
+            repeat = false;
 
-          optionSelected = getUint8FromConsole("\nOpcion Seleccionada: ");
-          
-          UI_DEBUG("optionSelected=%i\n", optionSelected);
+            do 
+            {
+              printf("\nSelecciona el campo que quieres modificar:\n\n");
+              printf("1.- Nombre\n");
+              printf("2.- Telefono\n");
+              printf("3.- Direccion\n");
+              printf("4.- Ciudad\n");
+              printf("5.- Cambiar todos los campos\n");
 
-          isValidOption = validateIntInput(optionSelected, CHANGE_NAME, CHANGE_CITY, true);
+              optionSelected = getUint8FromConsole("\nOpcion Seleccionada: ");
+              isValidOption = validateIntInput(optionSelected, CHANGE_NAME, CHANGE_ALL, true);
+            }while (!isValidOption);
 
-        }while (isValidOption == false);
+            UI_DEBUG("optionSelected=%i\n", optionSelected);
 
-        printf("\nEscribe el nuevo valor del\n");
+            printf("\nEscribe el nuevo valor del\n");
 
-        switch (optionSelected)
-        {
-            case CHANGE_NAME:    getRegInfo(NULL, pName, NULL, NULL, NULL);
-                break;
-            case CHANGE_TEL:     getRegInfo(NULL, NULL, pTel, NULL, NULL);
-                break;
-            case CHANGE_ADDRESS: getRegInfo(NULL, NULL, NULL, pAddress, NULL);
-                break;
-            case CHANGE_CITY:    getRegInfo(NULL, NULL, NULL, NULL, pCity);
-                break;
-            case CHANGE_ALL:     getRegInfo(NULL, pName, pTel, pAddress, pCity);
-                break;
-            default: break;
+            switch (optionSelected)
+            {
+                case CHANGE_NAME:    getRegInfo(NULL, pName, NULL, NULL, NULL);
+                    break;
+                case CHANGE_TEL:     getRegInfo(NULL, NULL, pTel, NULL, NULL);
+                    break;
+                case CHANGE_ADDRESS: getRegInfo(NULL, NULL, NULL, pAddress, NULL);
+                    break;
+                case CHANGE_CITY:    getRegInfo(NULL, NULL, NULL, NULL, pCity);
+                    break;
+                case CHANGE_ALL:     getRegInfo(NULL, pName, pTel, pAddress, pCity);
+                    break;
+                default: break;
+            }
+
+            repeat = repeatAction("\nDeseas cambiar otro campo [s,n]: ");
         }
-
-        printf("\n");
+        while (repeat);
 
         UI_DEBUG("New fields: name:%s tel:%s address:%s city:%s",
                  pName,
