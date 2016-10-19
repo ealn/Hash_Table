@@ -14,16 +14,24 @@ extern "C" {
 #endif
 
 // Constants
-#define NAME_SIZE           40
-#define TEL_SIZE            20
-#define ADD_SIZE            80
+#define FIRST_NAME_SIZE     32
+#define LAST_NAME_SIZE      32
+#define ADD_SIZE            64
 #define CITY_SIZE           30
+#define TEL_SIZE            12
 
 // Functions:
 int createTable(void);
 void destroyTable(void);
 int32_t displayTable(void);
-int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city, uint32_t * numberOfSteps);
+int32_t insertReg(uint32_t ID,
+                  char * pFirstName,
+                  char * pLastName,
+                  char * pAddress,
+                  char * pCity,
+                  char * pTel1,
+                  char * pTel2,
+                  uint32_t * numberOfSteps);
 int32_t searchReg(uint32_t ID, uint32_t *numberOfSteps);
 int32_t removeReg(uint32_t ID, uint32_t *numberOfSteps);
 int32_t changeReg(uint32_t ID, uint32_t *numberOfSteps);
@@ -34,6 +42,7 @@ int32_t getIDFromReg(Register *reg);
 void setTreeToReg(Register *reg, Node * newTree);
 int32_t printRegInfo(Register * reg);
 void copyRegister(Register *destination, Register *source);
+void swapRegister(Register *reg1, Register *reg2);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

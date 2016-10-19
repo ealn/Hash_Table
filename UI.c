@@ -30,21 +30,25 @@
 #define SEND_TO_FILE          2
 
 #define OUTPUT_FILE_SIZE      20
-#define REG_BUF_SIZE          256
+#define REG_BUF_SIZE          512
 
-#define CHANGE_NAME           1
-#define CHANGE_TEL            2
+#define CHANGE_FIRST_NAME     1
+#define CHANGE_LAST_NAME      2
 #define CHANGE_ADDRESS        3
 #define CHANGE_CITY           4
-#define CHANGE_ALL            5
+#define CHANGE_TEL1           5
+#define CHANGE_TEL2           6
+#define CHANGE_ALL            7
 
 //Definition of static functions
 static int32_t  showMainMenu(uint8_t *optionSelected);
 static void getRegInfo(uint32_t * pID,
-                       char * pName,
-                       char * pTel,
+                       char * pFirstName,
+                       char * pLastName,
                        char * pAddress,
-                       char * pCity);
+                       char * pCity,
+                       char * pTel1,
+                       char * pTel2);
 static int32_t showInsertRegMenu(void);
 static int32_t showSearchRegMenu(void);
 static int32_t showRemoveRegMenu(void);
@@ -198,24 +202,26 @@ static void printOutput(int32_t ret, uint32_t numberOfSteps)
 }
 
 static void getRegInfo(uint32_t * pID,
-                       char * pName,
-                       char * pTel,
+                       char * pFirstName,
+                       char * pLastName,
                        char * pAddress,
-                       char * pCity)
+                       char * pCity,
+                       char * pTel1,
+                       char * pTel2)
 {
     if (pID != NULL)
     {
         *pID = getUInt32FromConsole("ID: "); 
     }
     
-    if (pName != NULL)
+    if (pFirstName != NULL)
     {
-        getStringFromConsole("Nombre: ", pName, (NAME_SIZE - 1)); 
+        getStringFromConsole("Nombre(s): ", pFirstName, (FIRST_NAME_SIZE - 1)); 
     }
-    
-    if (pTel != NULL)
+
+    if (pLastName != NULL)
     {
-        getStringFromConsole("Telefono: ", pTel, (TEL_SIZE - 1));
+        getStringFromConsole("Apellido(s): ", pLastName, (LAST_NAME_SIZE - 1)); 
     }
     
     if (pAddress != NULL)
@@ -227,6 +233,16 @@ static void getRegInfo(uint32_t * pID,
     {
         getStringFromConsole("Ciudad: ", pCity, (CITY_SIZE - 1)); 
     }
+
+    if (pTel1 != NULL)
+    {
+        getStringFromConsole("Telefono #1: ", pTel1, (TEL_SIZE - 1));
+    }
+
+    if (pTel2 != NULL)
+    {
+        getStringFromConsole("Telefono #2: ", pTel2, (TEL_SIZE - 1));
+    }
 }
 
 static int32_t showInsertRegMenu(void)
@@ -234,31 +250,37 @@ static int32_t showInsertRegMenu(void)
     int32_t    ret = SUCCESS;
     uint32_t   ID = 0; 
     uint32_t   numberOfSteps = 0;
-    char       name[NAME_SIZE];
-    char       tel[TEL_SIZE];
+    char       first_name[FIRST_NAME_SIZE];
+    char       last_name[LAST_NAME_SIZE];
     char       address[ADD_SIZE];
     char       city[CITY_SIZE];
+    char       tel1[TEL_SIZE];
+    char       tel2[TEL_SIZE];
 
-    memset(&name, 0, sizeof(char)*NAME_SIZE);
-    memset(&tel, 0, sizeof(char)*TEL_SIZE);
+    memset(&first_name, 0, sizeof(char)*FIRST_NAME_SIZE);
+    memset(&last_name, 0, sizeof(char)*LAST_NAME_SIZE);
     memset(&address, 0, sizeof(char)*ADD_SIZE);
     memset(&city, 0, sizeof(char)*CITY_SIZE);
+    memset(&tel1, 0, sizeof(char)*TEL_SIZE);
+    memset(&tel2, 0, sizeof(char)*TEL_SIZE);
 
     cleanScreen();
 
     printf("\n                    ******* Informacion del Registro *******\n\n");
     printf("Por favor intruduce los datos del registro\n");
     
-    getRegInfo(&ID, name, tel, address, city);
+    getRegInfo(&ID, first_name, last_name, address, city, tel1, tel2);
     
-    UI_DEBUG(" Insert register:\nID: %d \nname: %s\ntel: %s\naddress: %s\ncity: %s\n",
-             ID,
-             name,
-             tel,
-             address,
-             city);
+    UI_DEBUG(" Insert register:\nID: %d \nfirst name: %s\nlast name: %s\naddress: %s\ncity: %s\ntel 1: %s\ntel 2: %s\n",
+             ID, 
+             first_name, 
+             last_name, 
+             address, 
+             city, 
+             tel1, 
+             tel2);
   
-    ret = insertReg(ID, name, tel, address, city, &numberOfSteps);
+    ret = insertReg(ID, first_name, last_name, address, city, tel1, tel2, &numberOfSteps);
   
     printOutput(ret, numberOfSteps);
 
@@ -276,7 +298,7 @@ static int32_t showSearchRegMenu(void)
     printf("\n                    ******* Informacion del Registro *******\n\n");
     printf("Por favor intruduce el ID del registro a buscar\n");
 
-    getRegInfo(&ID, NULL, NULL, NULL, NULL);
+    getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
     UI_DEBUG("ID=%d\n", ID);
     ret = searchReg(ID, &numberOfSteps);
@@ -297,7 +319,7 @@ static int32_t showRemoveRegMenu(void)
     printf("\n                    ******* Informacion del Registro *******\n\n");
     printf("Por favor intruduce el ID del registro a eliminar\n");
 
-    getRegInfo(&ID, NULL, NULL, NULL, NULL);
+    getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
     UI_DEBUG("ID=%d\n", ID);
     ret = removeReg(ID, &numberOfSteps);
@@ -318,7 +340,7 @@ static int32_t showChangeRegMenu(void)
     printf("\n                    ******* Informacion del Registro *******\n\n");
     printf("Por favor intruduce el ID del registro a ser cambiado\n");
 
-    getRegInfo(&ID, NULL, NULL, NULL, NULL);
+    getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
     UI_DEBUG("ID=%d\n", ID);
     ret = changeReg(ID, &numberOfSteps);
@@ -453,18 +475,22 @@ static int32_t printInfoInTableView(char *str)
 int32_t showRegInfo(uint32_t hashValue,
                     uint32_t treeLevel,
                     uint32_t ID,
-                    char *pName, 
-                    char *pTel, 
-                    char *pAddress, 
-                    char *pCity)
+                    char * pFirstName,
+                    char * pLastName,
+                    char * pAddress,
+                    char * pCity,
+                    char * pTel1,
+                    char * pTel2)
 {
     int32_t ret = SUCCESS;
     char regBuf[REG_BUF_SIZE];
 
-    if (pName != NULL
-        && pTel != NULL
+    if (pFirstName != NULL
+        && pLastName != NULL
         && pAddress != NULL
-        && pCity != NULL)
+        && pCity != NULL
+        && pTel1 != NULL
+        && pTel2 != NULL)
     {
         memset(regBuf, 0, sizeof(char)*REG_BUF_SIZE);
 
@@ -475,18 +501,20 @@ int32_t showRegInfo(uint32_t hashValue,
             if (g_tableView->view == SHOW_FULL_TABLE)
             {
                 sprintf(regBuf,
-                        "\nIndice #%d\t Nivel en el arbol: %d\nID:%d\nNombre: %s\nTel: %s\nDireccion: %s\nCiudad: %s\n\n",
+                        "\nIndice #%d\t Nivel en el arbol: %d\nID:%d\nNombre(s): %s\nApellido(s): %s\nDireccion: %s\nCiudad: %s\nTel #1: %s\nTel #2: %s\n\n",
                         hashValue,
                         treeLevel,
-                        ID, 
-                        pName,
-                        pTel,
+                        ID,
+                        pFirstName,
+                        pLastName,
                         pAddress,
-                        pCity);
+                        pCity,
+                        pTel1,
+                        pTel2);
             }
             else if (g_tableView->view == SHOW_SUMMARY_TABLE)
             {
-                sprintf(regBuf, "%d\t%d\t%d\t%s\n", hashValue, treeLevel, ID, pName);
+                sprintf(regBuf, "%d\t%d\t%d\t%s %s\n", hashValue, treeLevel, ID, pFirstName, pLastName);
             }
 
             printInfoInTableView(regBuf);
@@ -506,26 +534,32 @@ int32_t showRegInfo(uint32_t hashValue,
     return ret; 
 }
 
-int32_t changeFieldsOfReg(char *pName,
-                          char *pTel,
-                          char *pAddress,
-                          char *pCity)
+int32_t changeFieldsOfReg(char * pFirstName,
+                          char * pLastName,
+                          char * pAddress,
+                          char * pCity,
+                          char * pTel1,
+                          char * pTel2)
 {
     int32_t ret = SUCCESS;
     uint8_t optionSelected = 0;
     bool    isValidOption = true;
     bool    repeat = false;
 
-    if (pName != NULL
-        && pTel != NULL
+    if (pFirstName != NULL
+        && pLastName != NULL
         && pAddress != NULL
-        && pCity != NULL)
+        && pCity != NULL
+        && pTel1 != NULL
+        && pTel2 != NULL)
     {
-        UI_DEBUG("Original fields: name:%s tel:%s address:%s city:%s",
-                 pName,
-                 pTel,
+        UI_DEBUG("Original fields: first name:%s last name:%s address:%s city:%s tel #1:%s tel #2:%s",
+                 pFirstName,
+                 pLastName,
                  pAddress,
-                 pCity);
+                 pCity,
+                 pTel1,
+                 pTel2);
 
         do
         {
@@ -534,14 +568,16 @@ int32_t changeFieldsOfReg(char *pName,
             do 
             {
               printf("\nSelecciona el campo que quieres modificar:\n\n");
-              printf("1.- Nombre\n");
-              printf("2.- Telefono\n");
+              printf("1.- Nombre(s)\n");
+              printf("2.- Apellido(s)\n");
               printf("3.- Direccion\n");
               printf("4.- Ciudad\n");
-              printf("5.- Cambiar todos los campos\n");
+              printf("5.- Telefono #1\n");
+              printf("6.- Telefono #2\n");
+              printf("7.- Cambiar todos los campos\n");
 
               optionSelected = getUint8FromConsole("\nOpcion Seleccionada: ");
-              isValidOption = validateIntInput(optionSelected, CHANGE_NAME, CHANGE_ALL, true);
+              isValidOption = validateIntInput(optionSelected, CHANGE_FIRST_NAME, CHANGE_ALL, true);
             }while (!isValidOption);
 
             UI_DEBUG("optionSelected=%i\n", optionSelected);
@@ -550,15 +586,19 @@ int32_t changeFieldsOfReg(char *pName,
 
             switch (optionSelected)
             {
-                case CHANGE_NAME:    getRegInfo(NULL, pName, NULL, NULL, NULL);
+                case CHANGE_FIRST_NAME: getRegInfo(NULL, pFirstName, NULL, NULL, NULL, NULL, NULL);
                     break;
-                case CHANGE_TEL:     getRegInfo(NULL, NULL, pTel, NULL, NULL);
+                case CHANGE_LAST_NAME:  getRegInfo(NULL, NULL, pLastName, NULL, NULL, NULL, NULL);
                     break;
-                case CHANGE_ADDRESS: getRegInfo(NULL, NULL, NULL, pAddress, NULL);
+                case CHANGE_ADDRESS:    getRegInfo(NULL, NULL, NULL, pAddress, NULL, NULL, NULL);
                     break;
-                case CHANGE_CITY:    getRegInfo(NULL, NULL, NULL, NULL, pCity);
+                case CHANGE_CITY:       getRegInfo(NULL, NULL, NULL, NULL, pCity, NULL, NULL);
                     break;
-                case CHANGE_ALL:     getRegInfo(NULL, pName, pTel, pAddress, pCity);
+                case CHANGE_TEL1:       getRegInfo(NULL, NULL, NULL, NULL, NULL, pTel1, NULL);
+                    break;
+                case CHANGE_TEL2:       getRegInfo(NULL, NULL, NULL, NULL, NULL, NULL, pTel2);
+                    break;
+                case CHANGE_ALL:     getRegInfo(NULL, pFirstName, pLastName, pAddress, pCity, pTel1, pTel2);
                     break;
                 default: break;
             }
@@ -567,11 +607,13 @@ int32_t changeFieldsOfReg(char *pName,
         }
         while (repeat);
 
-        UI_DEBUG("New fields: name:%s tel:%s address:%s city:%s",
-                 pName,
-                 pTel,
+        UI_DEBUG("New fields: first name:%s last name:%s address:%s city:%s tel #1:%s tel #2:%s",
+                 pFirstName,
+                 pLastName,
                  pAddress,
-                 pCity);
+                 pCity,
+                 pTel1,
+                 pTel2);
     }
     else
     {

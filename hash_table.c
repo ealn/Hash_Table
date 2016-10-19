@@ -26,10 +26,12 @@ struct _Register
 {
     uint32_t  hashValue;
     uint32_t  ID;
-    char      name[NAME_SIZE];
-    char      tel[TEL_SIZE];
+    char      first_name[FIRST_NAME_SIZE];
+    char      last_name[LAST_NAME_SIZE];
     char      address[ADD_SIZE];
     char      city[CITY_SIZE];
+    char      tel1[TEL_SIZE];
+    char      tel2[TEL_SIZE];
     Node    * tree;
 };
 
@@ -146,19 +148,23 @@ static uint32_t getHashValue(uint32_t ID)
 static void insertInfoIntoReg(Register * reg,
                               uint32_t hashValue,
                               uint32_t ID,
-                              char *name, 
-                              char *tel, 
-                              char *address, 
-                              char *city)
+                              char *pFirstName,
+                              char *pLastName,
+                              char *pAddress, 
+                              char *pCity,
+                              char *pTel1,
+                              char *pTel2)
 {
     if (reg != NULL)
     {
         reg->hashValue = hashValue;
         reg->ID = ID;
-        memcpy(reg->name, name, sizeof(char) * (NAME_SIZE - 1));      //-1 to keep the '\0' at the end
-        memcpy(reg->tel, tel, sizeof(char) * (TEL_SIZE - 1));         //-1 to keep the '\0' at the end
-        memcpy(reg->address, address, sizeof(char) * (ADD_SIZE - 1)); //-1 to keep the '\0' at the end
-        memcpy(reg->city, city, sizeof(char) * (CITY_SIZE - 1));      //-1 to keep the '\0' at the end
+        memcpy(reg->first_name, pFirstName, sizeof(char) * (FIRST_NAME_SIZE - 1)); //-1 to keep the '\0' at the end
+        memcpy(reg->last_name,  pLastName,  sizeof(char) * (LAST_NAME_SIZE - 1));  //-1 to keep the '\0' at the end
+        memcpy(reg->address,    pAddress,   sizeof(char) * (ADD_SIZE - 1));        //-1 to keep the '\0' at the end
+        memcpy(reg->city,       pCity,      sizeof(char) * (CITY_SIZE - 1));       //-1 to keep the '\0' at the end
+        memcpy(reg->tel1,       pTel1,      sizeof(char) * (TEL_SIZE - 1));        //-1 to keep the '\0' at the end
+        memcpy(reg->tel2,       pTel2,      sizeof(char) * (TEL_SIZE - 1));        //-1 to keep the '\0' at the end
     }
 }
 
@@ -181,6 +187,30 @@ void copyRegister(Register *destination, Register *source)
     }
 }
 
+void swapRegister(Register *reg1, Register *reg2)
+{
+    if (reg1 != NULL
+        && reg2 != NULL)
+    {
+        Register  tempReg;
+
+        HASHTAB_DEBUG("reg1 hashValue=%d reg->ID=%d reg->tree=%08lx\n", 
+                      reg1->hashValue,
+                      reg1->ID, 
+                      reg1->tree);
+
+        HASHTAB_DEBUG("reg2 hashValue=%d reg->ID=%d reg->tree=%08lx\n", 
+                      reg2->hashValue,
+                      reg2->ID, 
+                      reg2->tree);
+
+        //swap registers
+        copyRegister(&tempReg, reg1);
+        copyRegister(reg1, reg2);
+        copyRegister(reg2, &tempReg);
+    }
+}
+
 int32_t printRegInfo(Register * reg)
 {
     int32_t ret = SUCCESS;
@@ -193,10 +223,12 @@ int32_t printRegInfo(Register * reg)
             ret = showRegInfo(reg->hashValue,
                               getNodeLevel(reg->tree),
                               reg->ID,
-                              reg->name, 
-                              reg->tel, 
+                              reg->first_name,
+                              reg->last_name, 
                               reg->address, 
-                              reg->city); 
+                              reg->city,
+                              reg->tel1,
+                              reg->tel2); 
         }
     }
     else
@@ -295,7 +327,14 @@ int32_t displayTable(void)
     return ret;
 }
 
-int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city, uint32_t * numberOfSteps)
+int32_t insertReg(uint32_t ID,
+                  char * pFirstName,
+                  char * pLastName,
+                  char * pAddress,
+                  char * pCity,
+                  char * pTel1,
+                  char * pTel2,
+                  uint32_t * numberOfSteps)
 {
     int32_t       ret = SUCCESS;
     uint32_t      hashValue = 0;
@@ -326,7 +365,15 @@ int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city,
             }
 
             //copy the information
-            insertInfoIntoReg(reg, hashValue, ID, name, tel, address, city);
+            insertInfoIntoReg(reg, 
+                              hashValue, 
+                              ID, 
+                              pFirstName, 
+                              pLastName, 
+                              pAddress, 
+                              pCity, 
+                              pTel1, 
+                              pTel2);
         }
         else   //there is a collision
         {
@@ -344,7 +391,15 @@ int32_t insertReg(uint32_t ID, char *name, char *tel, char *address, char *city,
                 newReg = allocRegisters(1);
 
                 //copy the information
-                insertInfoIntoReg(newReg, hashValue, ID, name, tel, address, city);
+                insertInfoIntoReg(newReg, 
+                                  hashValue, 
+                                  ID, 
+                                  pFirstName, 
+                                  pLastName, 
+                                  pAddress, 
+                                  pCity, 
+                                  pTel1, 
+                                  pTel2);
 
                 //Insert the new register into tree
                 ret = insertRegIntoTree(reg, newReg, numberOfSteps);
@@ -524,7 +579,12 @@ int32_t changeReg(uint32_t ID, uint32_t *numberOfSteps)
 
             //register found, print information
             printRegInfo(reg);
-            ret = changeFieldsOfReg(reg->name, reg->tel, reg->address, reg->city);
+            ret = changeFieldsOfReg(reg->first_name, 
+                                    reg->last_name, 
+                                    reg->address, 
+                                    reg->city, 
+                                    reg->tel1, 
+                                    reg->tel2);
             printRegInfo(reg);
         }
         else if (reg->tree != NULL)  //if this register has a tree
@@ -542,7 +602,12 @@ int32_t changeReg(uint32_t ID, uint32_t *numberOfSteps)
             {
                 //print information
                 printRegInfo(outputReg);
-                ret = changeFieldsOfReg(outputReg->name, outputReg->tel, outputReg->address, outputReg->city);
+                ret = changeFieldsOfReg(outputReg->first_name, 
+                                        outputReg->last_name, 
+                                        outputReg->address, 
+                                        outputReg->city, 
+                                        outputReg->tel1, 
+                                        outputReg->tel2);
                 printRegInfo(outputReg);
             }
         }

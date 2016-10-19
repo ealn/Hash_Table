@@ -16,14 +16,18 @@ int32_t showUI(void);
 int32_t showRegInfo(uint32_t hashValue,
                     uint32_t treeLevel,
                     uint32_t ID,
-                    char *pName, 
-                    char *pTel, 
-                    char *pAddress, 
-                    char *pCity);
-int32_t changeFieldsOfReg(char *pName,
-                          char *pTel,
-                          char *pAddress,
-                          char *pCity);
+                    char * pFirstName,
+                    char * pLastName,
+                    char * pAddress,
+                    char * pCity,
+                    char * pTel1,
+                    char * pTel2);
+int32_t changeFieldsOfReg(char * pFirstName,
+                          char * pLastName,
+                          char * pAddress,
+                          char * pCity,
+                          char * pTel1,
+                          char * pTel2);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"
