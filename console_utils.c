@@ -49,7 +49,7 @@ static void truncateStringWithControlChars(char *str, uint32_t size)
     }
 }
 
-int32_t getUInt32FromConsole(char *consoleStr)
+int32_t getUInt32FromConsole(const char *consoleStr)
 {
     uint32_t ret = 0;
 
@@ -74,7 +74,7 @@ int32_t getUInt32FromConsole(char *consoleStr)
     return ret; 
 }
 
-int32_t getInt32FromConsole(char *consoleStr)
+int32_t getInt32FromConsole(const char *consoleStr)
 {
     int32_t ret = 0;
 
@@ -86,7 +86,7 @@ int32_t getInt32FromConsole(char *consoleStr)
     return ret;
 }
 
-uint16_t getUInt16FromConsole(char *consoleStr)
+uint16_t getUInt16FromConsole(const char *consoleStr)
 {
     uint16_t ret = 0;
 
@@ -98,7 +98,7 @@ uint16_t getUInt16FromConsole(char *consoleStr)
     return ret;
 }
 
-int16_t getInt16FromConsole(char *consoleStr)
+int16_t getInt16FromConsole(const char *consoleStr)
 {
     int16_t ret = 0;
 
@@ -110,7 +110,7 @@ int16_t getInt16FromConsole(char *consoleStr)
     return ret;
 }
 
-uint8_t getUint8FromConsole(char *consoleStr)
+uint8_t getUint8FromConsole(const char *consoleStr)
 {
     uint8_t ret = 0;
 
@@ -122,7 +122,7 @@ uint8_t getUint8FromConsole(char *consoleStr)
     return ret;
 }
 
-int8_t getInt8FromConsole(char *consoleStr)
+int8_t getInt8FromConsole(const char *consoleStr)
 {
     int8_t ret = 0;
 
@@ -134,7 +134,7 @@ int8_t getInt8FromConsole(char *consoleStr)
     return ret;
 }
 
-void getStringFromConsole(char *consoleStr, char *outputStr, uint32_t maxSize)
+void getStringFromConsole(const char *consoleStr, char *outputStr, uint32_t maxSize)
 {
     if (consoleStr != NULL
         && outputStr != NULL)
@@ -153,7 +153,7 @@ void getStringFromConsole(char *consoleStr, char *outputStr, uint32_t maxSize)
     }
 }
 
-char getFirstCharFromConsole(char *consoleStr)
+char getFirstCharFromConsole(const char *consoleStr)
 {
     char ret = 0;
 
@@ -186,7 +186,7 @@ bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, boo
     return isValid;
 }
 
-bool repeatAction(char *str)
+bool repeatAction(const char *str)
 {
     bool repeat = false;
     bool loop = false;

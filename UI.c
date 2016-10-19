@@ -54,7 +54,7 @@ static int32_t showSearchRegMenu(void);
 static int32_t showRemoveRegMenu(void);
 static int32_t showChangeRegMenu(void);
 static int32_t showTableView(void);
-static int32_t printInfoInTableView(char *str);
+static int32_t printInfoInTableView(const char *str);
 
 //Type definitions
 typedef struct _TableView
@@ -80,7 +80,7 @@ static void createTableView(void)
 {
     if (g_tableView == NULL)
     {
-        g_tableView = MEMALLOC(sizeof(TableView));
+        g_tableView = (TableView *)MEMALLOC(sizeof(TableView));
 
         if (g_tableView != NULL)
         {
@@ -423,7 +423,7 @@ static int32_t showTableView(void)
     return ret;
 }
 
-static int32_t printInfoInTableView(char *str)
+static int32_t printInfoInTableView(const char *str)
 {
     int32_t  ret = SUCCESS;
     FILE    *pFile = NULL;
