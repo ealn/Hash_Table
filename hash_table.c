@@ -17,7 +17,7 @@
 #include "UI.h"
 
 //Constants
-#define NUMBER_OF_REG       30
+#define NUMBER_OF_REG       20
 #define REGISTER_SIZE       sizeof(Register)
 #define TABLE_SIZE          sizeof(Table) 
 

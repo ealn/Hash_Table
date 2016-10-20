@@ -165,7 +165,7 @@ char getFirstCharFromConsole(const char *consoleStr)
     return ret; 
 }
 
-bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, bool needCleanScreen)
+bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit)
 {
     bool isValid = true;
 
@@ -176,11 +176,6 @@ bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, boo
 
         //waiting for a key input
         getchar();
-
-        if (needCleanScreen)
-        {
-            cleanScreen();
-        }
     }
 
     return isValid;
@@ -230,4 +225,54 @@ bool repeatAction(const char *str)
     while (loop);
 
     return repeat;
+}
+
+uint8_t createMenuWithMultipleOptions(const char * title,
+                                      const char * header,
+                                      const char * options,
+                                      const char * footer,
+                                      bool needValidateInput,
+                                      int32_t lowerLimit, 
+                                      int32_t upperLimit, 
+                                      bool needCleanScreen)
+{
+    uint8_t optionSelected = 0;
+    bool    isValidOption = true;
+
+    do 
+    {
+        if (needCleanScreen)
+        {
+            cleanScreen();
+        }
+
+        if (title != NULL) 
+        {
+            printf(title); 
+        }
+        if (header != NULL)
+        {
+            printf(header); 
+        }
+        if (options != NULL)
+        {
+            printf(options); 
+        }
+
+        if (footer != NULL)
+        {
+            optionSelected = getUint8FromConsole(footer); 
+        }
+        else
+        {
+            optionSelected = getUint8FromConsole(" ");
+        }
+
+        if (needValidateInput)
+        {
+            isValidOption = validateIntInput(optionSelected, lowerLimit, upperLimit); 
+        }
+    }while (!isValidOption);
+
+    return optionSelected;
 }

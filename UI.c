@@ -15,6 +15,7 @@
 #include "trace.h"
 #include "memutils.h"
 #include "console_utils.h"
+#include "resources.h"
 
 //Constanst
 #define INSERT_REG            1
@@ -117,7 +118,6 @@ int32_t showUI(void)
     do
     {
         repeat = false;
-        cleanScreen();
         
         ret = showMainMenu(&optionSelected);
     
@@ -140,7 +140,9 @@ int32_t showUI(void)
         
         if (optionSelected != EXIT)
         {
-            repeat = repeatAction("\nDeseas realizar otra operacion [s,n]: ");
+            //waiting for a key input
+            getchar();
+            repeat = true;
         }
     }while (repeat);
     
@@ -156,20 +158,14 @@ static int32_t showMainMenu(uint8_t *optionSelected)
 
     if (optionSelected != NULL)
     {
-        do 
-        {
-          printf("\n                    ******* HASH TABLE *******\n\n");
-          printf("Selecciona la opcion deseada:\n\n");
-          printf("1.- Insertar un registro\n");
-          printf("2.- Buscar un registro\n");
-          printf("3.- Borrar un registro\n");
-          printf("4.- Cambiar un registro\n");
-          printf("5.- Mostrar la tabla\n");
-          printf("6.- Salir\n\n");
-
-          *optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
-          isValidOption = validateIntInput(*optionSelected, INSERT_REG, EXIT, true);
-        }while (!isValidOption);
+        *optionSelected = createMenuWithMultipleOptions(STR_HASH_TAB_TITLE,
+                                                        STR_SELECT_OPTION,
+                                                        STR_MAIN_MENU_OPTIONS,
+                                                        STR_OPTION_SELECTED,
+                                                        true,
+                                                        INSERT_REG,
+                                                        EXIT,
+                                                        true);
 
         UI_DEBUG("optionSelected=%i\n", *optionSelected);
     }
@@ -186,19 +182,19 @@ static void printOutput(int32_t ret, uint32_t numberOfSteps)
 {
     switch (ret)
     {
-        case SUCCESS: printf("\nOperacion exitosa!!!\n");
+        case SUCCESS:         printf(STR_SUCCESS);
             break;
-        case FAIL: printf("\nHubo un ERROR mientras se ejecutaba el programa\n");
+        case FAIL:            printf(STR_FAIL);
             break;
-        case REG_NOT_FOUND: printf("\nEl registro no fue encontrado\n");
+        case REG_NOT_FOUND:   printf(STR_REGISTER_NOT_FOUND);
             break;
-        case REG_DUPLICATED: printf("\nEl registro esta duplicado\n");
+        case REG_DUPLICATED:  printf(STR_REGISTER_DUPLICATED);
             break;
         default:
             break;
     }
 
-    printf("\nNumero de pasos que tomo realizar la accion = %d\n\n", numberOfSteps);
+    printf(STR_NUMBER_OF_STEPS, numberOfSteps);
 }
 
 static void getRegInfo(uint32_t * pID,
@@ -211,37 +207,37 @@ static void getRegInfo(uint32_t * pID,
 {
     if (pID != NULL)
     {
-        *pID = getUInt32FromConsole("ID: "); 
+        *pID = getUInt32FromConsole(STR_ID); 
     }
     
     if (pFirstName != NULL)
     {
-        getStringFromConsole("Nombre(s): ", pFirstName, (FIRST_NAME_SIZE - 1)); 
+        getStringFromConsole(STR_FIRST_NAME, pFirstName, (FIRST_NAME_SIZE - 1)); 
     }
 
     if (pLastName != NULL)
     {
-        getStringFromConsole("Apellido(s): ", pLastName, (LAST_NAME_SIZE - 1)); 
+        getStringFromConsole(STR_LAST_NAME, pLastName, (LAST_NAME_SIZE - 1)); 
     }
     
     if (pAddress != NULL)
     {
-        getStringFromConsole("Direccion: ", pAddress, (ADD_SIZE - 1));
+        getStringFromConsole(STR_ADDRESS, pAddress, (ADD_SIZE - 1));
     }
     
     if (pCity != NULL)
     {
-        getStringFromConsole("Ciudad: ", pCity, (CITY_SIZE - 1)); 
+        getStringFromConsole(STR_CITY, pCity, (CITY_SIZE - 1)); 
     }
 
     if (pTel1 != NULL)
     {
-        getStringFromConsole("Telefono #1: ", pTel1, (TEL_SIZE - 1));
+        getStringFromConsole(STR_TEL_1, pTel1, (TEL_SIZE - 1));
     }
 
     if (pTel2 != NULL)
     {
-        getStringFromConsole("Telefono #2: ", pTel2, (TEL_SIZE - 1));
+        getStringFromConsole(STR_TEL_2, pTel2, (TEL_SIZE - 1));
     }
 }
 
@@ -266,8 +262,8 @@ static int32_t showInsertRegMenu(void)
 
     cleanScreen();
 
-    printf("\n                    ******* Informacion del Registro *******\n\n");
-    printf("Por favor intruduce los datos del registro\n");
+    printf(STR_REG_INFO);
+    printf(STR_INSERT_REG);
     
     getRegInfo(&ID, first_name, last_name, address, city, tel1, tel2);
     
@@ -295,8 +291,8 @@ static int32_t showSearchRegMenu(void)
    
     cleanScreen();
 
-    printf("\n                    ******* Informacion del Registro *******\n\n");
-    printf("Por favor intruduce el ID del registro a buscar\n");
+    printf(STR_REG_INFO);
+    printf(STR_SEARCH_REG);
 
     getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
@@ -316,8 +312,8 @@ static int32_t showRemoveRegMenu(void)
 
     cleanScreen();
 
-    printf("\n                    ******* Informacion del Registro *******\n\n");
-    printf("Por favor intruduce el ID del registro a eliminar\n");
+    printf(STR_REG_INFO);
+    printf(STR_REMOVE_REG);
 
     getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
@@ -337,8 +333,8 @@ static int32_t showChangeRegMenu(void)
 
     cleanScreen();
 
-    printf("\n                    ******* Informacion del Registro *******\n\n");
-    printf("Por favor intruduce el ID del registro a ser cambiado\n");
+    printf(STR_REG_INFO);
+    printf(STR_CHANGE_REG);
 
     getRegInfo(&ID, NULL, NULL, NULL, NULL, NULL, NULL);
     
@@ -358,41 +354,33 @@ static int32_t showTableView(void)
 
     if (g_tableView != NULL)
     {
-        do
-        {
-            cleanScreen();
-
-            printf("\n                    ******* Mostrar Tabla *******\n\n");
-            printf("Donde deseas que se muestre la tabla: \n\n");
-            printf("1.- Mostrar en la Consola \n");
-            printf("2.- Enviar a un archivo \n\n");
-
-            optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
-            isValidOption = validateIntInput(optionSelected, SEND_TO_CONSOLE, SEND_TO_FILE, true);
-        }while (!isValidOption);
+        optionSelected = createMenuWithMultipleOptions(STR_SHOW_TAB_TITLE,
+                                                       STR_SHOW_TAB_OUTPUT_HEADER,
+                                                       STR_SHOW_TAB_OUTPUT_OPTIONS,
+                                                       STR_OPTION_SELECTED,
+                                                       true,
+                                                       SEND_TO_CONSOLE,
+                                                       SEND_TO_FILE,
+                                                       true);
 
         g_tableView->output = optionSelected;
         UI_DEBUG("Table output option = %d\n", g_tableView->output);
 
         if (g_tableView->output == SEND_TO_FILE)
         {
-            getStringFromConsole("Nombre del archivo de salida: ",
+            getStringFromConsole(STR_OUTPUT_FILE,
                                  g_tableView->outputFile,
                                  (OUTPUT_FILE_SIZE - 1)); 
         }
 
-        do
-        {
-            cleanScreen();
-
-            printf("\n                    ******* Mostrar Tabla *******\n\n");
-            printf("Como deseas que se muestre la tabla: \n\n");
-            printf("1.- Completa \n");
-            printf("2.- Resumida \n\n");
-
-            optionSelected = getUint8FromConsole("Opcion Seleccionada: ");
-            isValidOption = validateIntInput(optionSelected, SHOW_FULL_TABLE, SHOW_SUMMARY_TABLE, true);
-        }while (!isValidOption);
+        optionSelected = createMenuWithMultipleOptions(STR_SHOW_TAB_TITLE,
+                                                       STR_SHOW_TAB_VIEW_HEADER,
+                                                       STR_SHOW_TAB_VIEW_OPTIONS,
+                                                       STR_OPTION_SELECTED,
+                                                       true,
+                                                       SHOW_FULL_TABLE,
+                                                       SHOW_SUMMARY_TABLE,
+                                                       true);
 
         g_tableView->view = optionSelected;
         UI_DEBUG("Table view option = %d\n", g_tableView->output);
@@ -404,7 +392,7 @@ static int32_t showTableView(void)
 
         if (g_tableView->view == SHOW_SUMMARY_TABLE)
         {
-            ret = printInfoInTableView("Indice\tNivel\tID\tNombre\n\n");
+            ret = printInfoInTableView(STR_SUMMARY_FORMAT_HEADER);
         }
 
         if (ret == SUCCESS)
@@ -501,7 +489,7 @@ int32_t showRegInfo(uint32_t hashValue,
             if (g_tableView->view == SHOW_FULL_TABLE)
             {
                 sprintf(regBuf,
-                        "\nIndice #%d\t Nivel en el arbol: %d\nID:%d\nNombre(s): %s\nApellido(s): %s\nDireccion: %s\nCiudad: %s\nTel #1: %s\nTel #2: %s\n\n",
+                        STR_OUTPUT_FULL_FORMAT,
                         hashValue,
                         treeLevel,
                         ID,
@@ -514,7 +502,7 @@ int32_t showRegInfo(uint32_t hashValue,
             }
             else if (g_tableView->view == SHOW_SUMMARY_TABLE)
             {
-                sprintf(regBuf, "%d\t%d\t%d\t%s %s\n", hashValue, treeLevel, ID, pFirstName, pLastName);
+                sprintf(regBuf, STR_OUTPUT_SUMMARY_FORMAT, hashValue, treeLevel, ID, pFirstName, pLastName);
             }
 
             printInfoInTableView(regBuf);
@@ -565,24 +553,18 @@ int32_t changeFieldsOfReg(char * pFirstName,
         {
             repeat = false;
 
-            do 
-            {
-              printf("\nSelecciona el campo que quieres modificar:\n\n");
-              printf("1.- Nombre(s)\n");
-              printf("2.- Apellido(s)\n");
-              printf("3.- Direccion\n");
-              printf("4.- Ciudad\n");
-              printf("5.- Telefono #1\n");
-              printf("6.- Telefono #2\n");
-              printf("7.- Cambiar todos los campos\n");
-
-              optionSelected = getUint8FromConsole("\nOpcion Seleccionada: ");
-              isValidOption = validateIntInput(optionSelected, CHANGE_FIRST_NAME, CHANGE_ALL, true);
-            }while (!isValidOption);
+            optionSelected = createMenuWithMultipleOptions(NULL,
+                                                           STR_CHANGE_REG_HEADER,
+                                                           STR_CHANGE_REG_OPTIONS,
+                                                           STR_OPTION_SELECTED,
+                                                           true,
+                                                           CHANGE_FIRST_NAME,
+                                                           CHANGE_ALL,
+                                                           false);
 
             UI_DEBUG("optionSelected=%i\n", optionSelected);
 
-            printf("\nEscribe el nuevo valor del\n");
+            printf(STR_INSERT_NEW_VALUE);
 
             switch (optionSelected)
             {
@@ -598,12 +580,12 @@ int32_t changeFieldsOfReg(char * pFirstName,
                     break;
                 case CHANGE_TEL2:       getRegInfo(NULL, NULL, NULL, NULL, NULL, NULL, pTel2);
                     break;
-                case CHANGE_ALL:     getRegInfo(NULL, pFirstName, pLastName, pAddress, pCity, pTel1, pTel2);
+                case CHANGE_ALL:        getRegInfo(NULL, pFirstName, pLastName, pAddress, pCity, pTel1, pTel2);
                     break;
                 default: break;
             }
 
-            repeat = repeatAction("\nDeseas cambiar otro campo [s,n]: ");
+            repeat = repeatAction(STR_REPEAT_CHANGE_REG);
         }
         while (repeat);
 

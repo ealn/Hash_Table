@@ -18,7 +18,15 @@ uint8_t getUint8FromConsole(const char *consoleStr);
 int8_t getInt8FromConsole(const char *consoleStr);
 void getStringFromConsole(const char *consoleStr, char *outputStr, uint32_t maxSize);
 char getFirstCharFromConsole(const char *consoleStr);
-bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit, bool needCleanScreen);
+bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit);
 void cleanScreen(void);
 bool repeatAction(const char *str);
+uint8_t createMenuWithMultipleOptions(const char * title,
+                                      const char * header,
+                                      const char * options,
+                                      const char * footer,
+                                      bool needValidateInput,
+                                      int32_t lowerLimit, 
+                                      int32_t upperLimit, 
+                                      bool needCleanScreen);
 
