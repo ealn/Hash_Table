@@ -463,6 +463,8 @@ static int32_t printInfoInTableView(const char *str)
 int32_t showRegInfo(uint32_t hashValue,
                     uint32_t treeLevel,
                     uint32_t ID,
+                    uint32_t parentID,
+                    uint32_t side,
                     char * pFirstName,
                     char * pLastName,
                     char * pAddress,
@@ -491,8 +493,10 @@ int32_t showRegInfo(uint32_t hashValue,
                 sprintf(regBuf,
                         STR_OUTPUT_FULL_FORMAT,
                         hashValue,
-                        treeLevel,
                         ID,
+                        treeLevel,
+                        parentID,
+                        (side > 0)?((side == 1)? STR_LEFT: STR_RIGHT): "",
                         pFirstName,
                         pLastName,
                         pAddress,
@@ -502,7 +506,15 @@ int32_t showRegInfo(uint32_t hashValue,
             }
             else if (g_tableView->view == SHOW_SUMMARY_TABLE)
             {
-                sprintf(regBuf, STR_OUTPUT_SUMMARY_FORMAT, hashValue, treeLevel, ID, pFirstName, pLastName);
+                sprintf(regBuf, 
+                        STR_OUTPUT_SUMMARY_FORMAT, 
+                        hashValue, 
+                        ID, 
+                        treeLevel, 
+                        parentID,
+                        (side > 0)?((side == 1)? STR_LEFT: STR_RIGHT): "",
+                        pFirstName, 
+                        pLastName);
             }
 
             printInfoInTableView(regBuf);

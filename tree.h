@@ -21,6 +21,8 @@ int32_t removeIDIntoTree(Register *baseReg, uint32_t ID, uint32_t *numberOfSteps
 void destroyTree(Node * tree);
 int32_t showTree(Node * tree);
 uint32_t getNodeLevel(Node * pNode);
+uint32_t getParentID(Node * pNode);
+uint32_t getNodeSide(Node * pNode);
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

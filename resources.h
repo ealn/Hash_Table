@@ -45,16 +45,16 @@ extern "C" {
 #define STR_SHOW_TAB_VIEW_HEADER     "Como deseas que se muestre la tabla: \n\n"
 #define STR_SHOW_TAB_VIEW_OPTIONS    "1.- Completa \n"   \
                                      "2.- Resumida \n\n"
-#define STR_SUMMARY_FORMAT_HEADER    "Indice\tNivel\tID\tNombre\n\n"
-#define STR_OUTPUT_FULL_FORMAT       "\nIndice #%d\t Nivel en el arbol: %d\n"  \
-                                     "ID:%d\n"                                 \
+#define STR_SUMMARY_FORMAT_HEADER    "Indice\tID\tNivel\tPapa\tLado\tNombre\n\n"
+#define STR_OUTPUT_FULL_FORMAT       "\nIndice #%d\t ID:%d\n"  \
+                                     "Nivel en el arbol: %d\t ID del padre: %d\t lado: %s\n" \
                                      "Nombre(s): %s\n"                         \
                                      "Apellido(s): %s\n"                       \
                                      "Direccion: %s\n"                         \
                                      "Ciudad: %s\n"                            \
                                      "Tel #1: %s\n"                            \
                                      "Tel #2: %s\n\n"
-#define STR_OUTPUT_SUMMARY_FORMAT    "%d\t%d\t%d\t%s %s\n"
+#define STR_OUTPUT_SUMMARY_FORMAT    "%d\t%d\t%d\t%d\t%s\t%s %s\n"
 #define STR_CHANGE_REG_HEADER        "\nSelecciona el campo que quieres modificar:\n\n"
 #define STR_CHANGE_REG_OPTIONS       "1.- Nombre(s)\n"   \
                                      "2.- Apellido(s)\n" \
@@ -65,6 +65,8 @@ extern "C" {
                                      "7.- Cambiar todos los campos\n\n"
 #define STR_INSERT_NEW_VALUE         "\nEscribe el nuevo valor del\n"
 #define STR_REPEAT_CHANGE_REG        "\nDeseas cambiar otro campo [s,n]: "
+#define STR_LEFT                     "Izq"
+#define STR_RIGHT                    "Der"
 
 #if (defined(_cplusplus) || defined(__cplusplus))
 } // extern "C"

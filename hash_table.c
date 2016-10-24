@@ -223,6 +223,8 @@ int32_t printRegInfo(Register * reg)
             ret = showRegInfo(reg->hashValue,
                               getNodeLevel(reg->tree),
                               reg->ID,
+                              getParentID(reg->tree),
+                              getNodeSide(reg->tree),
                               reg->first_name,
                               reg->last_name, 
                               reg->address, 

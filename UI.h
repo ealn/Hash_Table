@@ -16,6 +16,8 @@ int32_t showUI(void);
 int32_t showRegInfo(uint32_t hashValue,
                     uint32_t treeLevel,
                     uint32_t ID,
+                    uint32_t parentID,
+                    uint32_t side,
                     char * pFirstName,
                     char * pLastName,
                     char * pAddress,

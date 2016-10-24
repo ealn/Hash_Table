@@ -823,7 +823,7 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
             if(pNode->FE == BALANCED)
             {
                 //exit
-                exitLoop = true;
+                break;
             }
             else if(pNode->FE == LEFT_TOO_HEAVY) 
             { 
@@ -839,7 +839,7 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
                     ret = SimpleRotationRight(pNode);
                 }
 
-                exitLoop = true; 
+                break; 
             } 
             else if(pNode->FE == RIGHT_TOO_HEAVY) 
             { 
@@ -855,7 +855,7 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
                     ret = SimpleRotationLeft(pNode);
                 }
 
-                exitLoop = true; 
+                break; 
             } 
             
             parent = pNode->parent;
@@ -874,12 +874,12 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
                 {
                     TREE_ERROR("Node parent is not pointing to the node\n");
                     ret = FAIL;
-                    exitLoop = true;
+                    break;
                 }
-
-                //calculate the next node
-                pNode = pNode->parent;
             } 
+
+            //calculate the next node
+            pNode = pNode->parent;
 
             if (numberOfSteps != NULL)
             {
@@ -1499,4 +1499,37 @@ uint32_t getNodeLevel(Node * pNode)
     }
 
     return level;
+}
+
+uint32_t getParentID(Node * pNode)
+{
+    uint32_t parentID = 0;
+
+    if (pNode != NULL
+        && pNode->parent != NULL)
+    {
+        parentID = pNode->parent->ID;
+    }
+
+    return parentID;
+}
+
+uint32_t getNodeSide(Node * pNode)
+{
+    uint32_t side = 0;
+
+    if (pNode != NULL
+        && pNode->parent != NULL)
+    {
+        if (pNode->parent->leftSide == pNode)
+        {
+            side = LEFT_SIDE;
+        }
+        else if (pNode->parent->rightSide == pNode)
+        {
+            side = RIGHT_SIDE;
+        }
+    }
+
+    return side;
 }
