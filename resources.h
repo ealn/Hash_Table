@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#define STR_HASH_TAB_TITLE           "\n                    ******* HASH TABLE *******\n\n"
+#define STR_HASH_TAB_TITLE           "\n                    ******* TABLA HASH *******\n\n"
 #define STR_SELECT_OPTION            "Selecciona la opcion deseada:\n\n"
 #define STR_MAIN_MENU_OPTIONS        "1.- Insertar un registro\n" \
                                      "2.- Buscar un registro\n"   \

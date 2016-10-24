@@ -855,6 +855,11 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
 
             TREE_DEBUG("pNode->ID=%d pNode->FE=%d\n", pNode->ID, pNode->FE);
 
+            if (numberOfSteps != NULL)
+            {
+                (*numberOfSteps)++;
+            }
+
             // if this is a new node
             if(isNewNode) 
             {
@@ -940,11 +945,6 @@ static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t *
 
             //calculate the next node
             pNode = pNode->parent;
-
-            if (numberOfSteps != NULL)
-            {
-                (*numberOfSteps)++;
-            }
         } 
     }
     else
