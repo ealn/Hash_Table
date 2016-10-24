@@ -189,18 +189,18 @@ static Node * getTopNode(Node *pNode, uint32_t * numberOfSteps)
     return topNode;
 }
 
-static Node * getLastLeftChild(Node *pNode, uint32_t * numberOfSteps)
+static Node * getLastRightChild(Node *pNode, uint32_t * numberOfSteps)
 {
-    Node * lastLeftChild = NULL;
+    Node * lastRightChild = NULL;
 
     if (pNode != NULL)
     {
-        lastLeftChild = pNode;
+        lastRightChild = pNode;
 
-        while (lastLeftChild != NULL
-               && lastLeftChild->leftSide != NULL)
+        while (lastRightChild != NULL
+               && lastRightChild->rightSide != NULL)
         {
-            lastLeftChild = lastLeftChild->leftSide;
+            lastRightChild = lastRightChild->rightSide;
 
             if (numberOfSteps != NULL)
             {
@@ -209,7 +209,7 @@ static Node * getLastLeftChild(Node *pNode, uint32_t * numberOfSteps)
         }
     }
 
-    return lastLeftChild;
+    return lastRightChild;
 }
 
 static uint32_t getNumberOfChilds(Node * pNode)
@@ -286,6 +286,32 @@ static int32_t validateTree(Node *tree, uint32_t * numberOfSteps)
     return ret;
 }
 
+static uint8_t detachNode(Node *pNode)
+{
+    uint8_t side = 0;
+
+    if (pNode != NULL
+        && pNode->parent != NULL)
+    {
+        Node *parent = NULL;
+
+        parent = pNode->parent;
+
+        if (parent->leftSide == pNode)
+        {
+            parent->leftSide = NULL;
+            side = LEFT_SIDE;
+        }
+        else if (parent->rightSide == pNode)
+        {
+            parent->rightSide = NULL;
+            side = RIGHT_SIDE;
+        }
+    }
+
+    return side;
+}
+
 static void changeTopNode(Node *pTopNode, Node *pNewNode)
 {
     if (pTopNode != NULL
@@ -351,7 +377,7 @@ static void replaceNode(Node *pNode, Node *pNewNode)
     }
 }
 
-static int32_t removeLeaf(Node *pNode)
+static int32_t removeLeaf(Node *pNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -369,20 +395,42 @@ static int32_t removeLeaf(Node *pNode)
         if (pNode->leftSide == NULL
             && pNode->rightSide == NULL)
         {
+            uint8_t side = 0;
+
             //Detach Node
             if (parent != NULL)
             {
-                if (parent->leftSide == pNode)
+                side = detachNode(pNode);
+
+                //If the parent does not have more childs
+                if (parent->leftSide == NULL
+                    && parent->rightSide == NULL)
                 {
-                    parent->leftSide = NULL;
-                }
-                else if (parent->rightSide == pNode)
-                {
-                    parent->rightSide = NULL;
+                    parent->FE = BALANCED;
+
+                    //go to grandparent
+                    if (parent->parent != NULL)
+                    {
+                        if (parent->parent->leftSide == parent)
+                        {
+                            side = LEFT_SIDE;
+                        }
+                        else if (parent->parent->rightSide == parent)
+                        {
+                            side = RIGHT_SIDE;
+                        }
+                    }
+
+                    parent = parent->parent;
                 }
             }
 
             destroyNode(pNode); 
+
+            if (parent != NULL)
+            {
+                balanceTree(parent, side, false, numberOfSteps);
+            }
         }
         else
         {
@@ -397,7 +445,7 @@ static int32_t removeLeaf(Node *pNode)
     return ret;
 }
 
-static int32_t removeTreeWithOneChild(Node *pNode)
+static int32_t removeTreeWithOneChild(Node *pNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
@@ -434,6 +482,9 @@ static int32_t removeTreeWithOneChild(Node *pNode)
                        child->parent);
 
             destroyNode(pNode); 
+
+            //adjust the level
+            validateTree(child, NULL);
         }
         else
         {
@@ -466,36 +517,45 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
         {
             Node *rightChild = NULL;
             Node *leftChild = NULL;
-            Node *lastLeftChild = NULL;
+            Node *lastRightChild = NULL;
+            Node *parentLastRightChild = NULL;
 
             rightChild = pNode->rightSide;
             leftChild = pNode->leftSide;
 
             //find the last left child
-            lastLeftChild = getLastLeftChild(rightChild, numberOfSteps);
+            lastRightChild = getLastRightChild(leftChild, numberOfSteps);
+            parentLastRightChild = lastRightChild->parent;
 
             // if there is not more left childs
-            if (lastLeftChild == rightChild)
+            if (lastRightChild == leftChild)
             {
-                replaceNode(pNode, lastLeftChild);
-                lastLeftChild->leftSide = leftChild;
-                leftChild->parent = lastLeftChild;
+                detachNode(lastRightChild);
+                replaceNode(pNode, lastRightChild);
+                lastRightChild->rightSide = rightChild;
+                rightChild->parent = lastRightChild;
             }
             else
             {
                 //if the last left child has a right child
-                if (lastLeftChild->rightSide != NULL)
+                if (lastRightChild->leftSide != NULL)
                 {
                     //replace the last left child with the right node
-                    replaceNode(lastLeftChild, lastLeftChild->rightSide);
+                    detachNode(lastRightChild->leftSide);
+                    replaceNode(lastRightChild, lastRightChild->leftSide);
+                }
+                else
+                {
+                    //Deteach Node
+                    detachNode(lastRightChild);
                 }
 
                 // replace pNode with the last left child
-                replaceNode(pNode, lastLeftChild);
-                lastLeftChild->leftSide = leftChild;
-                lastLeftChild->rightSide = rightChild;
-                leftChild->parent = lastLeftChild;
-                rightChild->parent = lastLeftChild;
+                replaceNode(pNode, lastRightChild);
+                lastRightChild->leftSide = leftChild;
+                lastRightChild->rightSide = rightChild;
+                leftChild->parent = lastRightChild;
+                rightChild->parent = lastRightChild;
             }
 
             destroyNode(pNode); 
@@ -532,11 +592,11 @@ static int32_t removeNodeFromTree(Node *pNode, uint32_t * numberOfSteps)
 
         if (numberOfChilds == 0)
         {
-            ret = removeLeaf(pNode);
+            ret = removeLeaf(pNode, numberOfSteps);
         }
         else if (numberOfChilds == 1)
         {
-            ret = removeTreeWithOneChild(pNode);
+            ret = removeTreeWithOneChild(pNode, numberOfSteps);
         }
         else if (numberOfChilds == 2)
         {
