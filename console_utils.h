@@ -20,7 +20,7 @@ void getStringFromConsole(const char *consoleStr, char *outputStr, uint32_t maxS
 char getFirstCharFromConsole(const char *consoleStr);
 bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit);
 void cleanScreen(void);
-bool repeatAction(const char *str);
+bool getYesOrNotFromConsole(const char *consoleStr);
 uint8_t createMenuWithMultipleOptions(const char * title,
                                       const char * header,
                                       const char * options,

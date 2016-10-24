@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "hash_table.h"
+#include "defines.h"
 #include "trace.h"
 #include "UI.h"
 

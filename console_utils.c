@@ -18,7 +18,7 @@
 //#define UNIX
 
 //Constants
-#define STDIN_BUF_SIZE          256
+#define STDIN_BUF_SIZE          4096
 
 void cleanScreen(void)
 {
@@ -181,9 +181,9 @@ bool validateIntInput(int32_t value, int32_t lowerLimit, int32_t upperLimit)
     return isValid;
 }
 
-bool repeatAction(const char *str)
+bool getYesOrNotFromConsole(const char *consoleStr)
 {
-    bool repeat = false;
+    bool ret = false;
     bool loop = false;
     char inputChar = 0;
     char inputStr[8];
@@ -193,7 +193,7 @@ bool repeatAction(const char *str)
         loop = false;
 
         memset(inputStr, 0, sizeof(char)*8);
-        getStringFromConsole(str, inputStr, 8); 
+        getStringFromConsole(consoleStr, inputStr, 8); 
         inputChar = inputStr[0];
 
         if (strlen(inputStr) == 1)   //1 character
@@ -203,7 +203,7 @@ bool repeatAction(const char *str)
             {
                 if (inputChar == 's' || inputChar == 'S') 
                 {
-                    repeat = true;
+                    ret = true;
                 }
             }
             else
@@ -224,7 +224,7 @@ bool repeatAction(const char *str)
     }
     while (loop);
 
-    return repeat;
+    return ret;
 }
 
 uint8_t createMenuWithMultipleOptions(const char * title,
@@ -262,10 +262,6 @@ uint8_t createMenuWithMultipleOptions(const char * title,
         if (footer != NULL)
         {
             optionSelected = getUint8FromConsole(footer); 
-        }
-        else
-        {
-            optionSelected = getUint8FromConsole(" ");
         }
 
         if (needValidateInput)

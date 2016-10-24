@@ -19,7 +19,6 @@
 //Constants
 #define MONTH_OFFSET        1
 #define YEAR_OFFSET         1900
-#define TIME_BUF_SIZE       20
 #define MESS_BUF_SIZE       12
 #define COMP_BUF_SIZE       12
 #define CALLER_BUF_SIZE     20
@@ -68,7 +67,7 @@ static void writeTrace(char * str)
     }
 }
 
-static void getTimeStamp(char * pOutputTime)
+void getTimeStamp(char * pOutputTime)
 {
     if (pOutputTime != NULL)
     {

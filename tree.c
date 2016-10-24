@@ -61,12 +61,12 @@ static int32_t navigateTree(Node *topNode, uint32_t algorithm, NavParmBlock * pN
 static int32_t inOrden(Node *pNode, NavParmBlock * pNavParmBlock);
 static int32_t preOrden(Node *pNode, NavParmBlock * pNavParmBlock);
 static int32_t postOrden(Node *pNode, NavParmBlock * pNavParmBlock);
-static int32_t insertNode(Node **ppTopNode, Node *newNode, uint32_t * numberOfSteps);
-static int32_t balanceTree(Node **ppTopNode, Node *pNode, uint8_t side, bool isNewNode, uint32_t * numberOfSteps);
-static int32_t SimpleRotationLeft(Node **ppTopNode, Node *pNode);
-static int32_t SimpleRotationRight(Node **ppTopNode, Node *pNode); 
-static int32_t DoubleRotationLeft(Node **ppTopNode, Node *pNode);
-static int32_t DoubleRotationRight(Node **ppTopNode, Node *pNode);
+static int32_t insertNode(Node *pTopNode, Node *newNode, uint32_t * numberOfSteps);
+static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t * numberOfSteps);
+static int32_t SimpleRotationLeft(Node *pNode);
+static int32_t SimpleRotationRight(Node *pNode); 
+static int32_t DoubleRotationLeft(Node *pNode);
+static int32_t DoubleRotationRight(Node *pNode);
 static int32_t createTree(Register *baseReg, Register *newReg, uint32_t * numberOfSteps);
 static int32_t searchID(Node *topNode, uint32_t ID, uint32_t *numberOfSteps, Node **ppOutputNode);
 
@@ -231,23 +231,77 @@ static uint32_t getNumberOfChilds(Node * pNode)
     return numberOfChilds;
 }
 
-static void changeTopNode(Node **ppTopNode, Node *pNewNode)
+static int32_t adjustLevel(Node *pNode, uint32_t * numberOfSteps)
 {
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
+    int32_t ret = SUCCESS;
+
+    if (pNode != NULL)
+    {
+        uint32_t level = 0;
+
+        getTopNode(pNode, &level);
+
+        pNode->level = level;
+
+        if (numberOfSteps != NULL)
+        {
+            (*numberOfSteps) += level;
+        }
+    }
+    else
+    {
+        TREE_WARNING("Node is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+
+static int32_t validateTree(Node *tree, uint32_t * numberOfSteps)
+{
+    int32_t ret = SUCCESS;
+
+    if (tree != NULL)
+    {
+        NavParmBlock navParmBlock;
+
+        memset(&navParmBlock, 0, sizeof(NavParmBlock));
+
+        //set the function showNode
+        navParmBlock.pNavFunction = adjustLevel;
+
+        ret = navigateTree(tree, NAV_PREORDER, &navParmBlock);
+        
+        if (ret != SUCCESS)
+        {
+            TREE_ERROR("ret=%d\n", ret);
+        }
+    }
+    else
+    {
+        TREE_ERROR("Tree is null\n");
+        ret = FAIL;
+    }
+
+    return ret;
+}
+
+static void changeTopNode(Node *pTopNode, Node *pNewNode)
+{
+    if (pTopNode != NULL
         && pNewNode != NULL
-        && isTopNode(*ppTopNode))
+        && isTopNode(pTopNode))
     {
         Register *pTopReg;
         Register *pNewReg;
 
-        pTopReg = (*ppTopNode)->reg;
+        pTopReg = pTopNode->reg;
         pNewReg = pNewNode->reg;
 
         //deteach registers
         setTreeToReg(pTopReg, NULL);
         setTreeToReg(pNewReg, NULL);
-        (*ppTopNode)->reg = NULL;
+        pTopNode->reg = NULL;
         pNewNode->reg = NULL;
 
         //swap registers
@@ -255,49 +309,41 @@ static void changeTopNode(Node **ppTopNode, Node *pNewNode)
 
         //swap nodes
         setTreeToReg(pTopReg, pNewNode);
-        setTreeToReg(pNewReg, *ppTopNode);
-        (*ppTopNode)->reg = pNewReg;
+        setTreeToReg(pNewReg, pTopNode);
+        pTopNode->reg = pNewReg;
         pNewNode->reg = pTopReg;
 
-        (*ppTopNode)->needFreeReg = true;
+        pTopNode->needFreeReg = true;
         pNewNode->needFreeReg = false;
-        *ppTopNode = pNewNode;
     }
 }
-static void replaceNode(Node **ppNode, Node *pNewNode)
+static void replaceNode(Node *pNode, Node *pNewNode)
 {
-    if (ppNode != NULL
-        && *ppNode != NULL
+    if (pNode != NULL
         && pNewNode != NULL)
     {
-        Node *parent = (*ppNode)->parent;
+        Node *parent = pNode->parent;
 
         pNewNode->parent = parent;
 
         if (parent != NULL)
         {
-            if (parent->leftSide == *ppNode)
+            if (parent->leftSide == pNode)
             {
                 parent->leftSide = pNewNode; 
             }
-            else if (parent->rightSide == *ppNode)
+            else if (parent->rightSide == pNode)
             {
                 parent->rightSide = pNewNode;
             }
         }
 
-        pNewNode->level = (*ppNode)->level;
+        pNewNode->level = pNode->level;
 
-        if (isTopNode(*ppNode))
+        if (isTopNode(pNode))
         {
-            changeTopNode(ppNode, pNewNode);
+            changeTopNode(pNode, pNewNode);
         }
-
-        // Set pointers to NULL except the pointer to
-        // the parent node because if this node is released
-        // we need to know if this node was the top node
-        //pNode->leftSide = NULL;
-        //pNode->rightSide = NULL;
     }
     else
     {
@@ -379,7 +425,7 @@ static int32_t removeTreeWithOneChild(Node *pNode)
                 child = pNode->rightSide;
             }
 
-            replaceNode(&pNode, child);
+            replaceNode(pNode, child);
 
             TREE_DEBUG("child->ID=%d child->leftSide=%08lx child->rigthSide=%08lx child->parent=%08lx\n", 
                        child->ID,
@@ -431,7 +477,7 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
             // if there is not more left childs
             if (lastLeftChild == rightChild)
             {
-                replaceNode(&pNode, lastLeftChild);
+                replaceNode(pNode, lastLeftChild);
                 lastLeftChild->leftSide = leftChild;
                 leftChild->parent = lastLeftChild;
             }
@@ -441,11 +487,11 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
                 if (lastLeftChild->rightSide != NULL)
                 {
                     //replace the last left child with the right node
-                    replaceNode(&lastLeftChild, lastLeftChild->rightSide);
+                    replaceNode(lastLeftChild, lastLeftChild->rightSide);
                 }
 
                 // replace pNode with the last left child
-                replaceNode(&pNode, lastLeftChild);
+                replaceNode(pNode, lastLeftChild);
                 lastLeftChild->leftSide = leftChild;
                 lastLeftChild->rightSide = rightChild;
                 leftChild->parent = lastLeftChild;
@@ -655,15 +701,14 @@ static int32_t postOrden(Node *pNode, NavParmBlock * pNavParmBlock)
     return ret;
 }
 
-static int32_t insertNode(Node **ppTopNode, Node *newNode, uint32_t * numberOfSteps)
+static int32_t insertNode(Node *pTopNode, Node *newNode, uint32_t * numberOfSteps)
 {
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
+    if (pTopNode != NULL
         && newNode != NULL)
     {
-        Node *pNode = *ppTopNode;
+        Node *pNode = pTopNode;
 
         while (pNode != NULL)
         {
@@ -687,7 +732,7 @@ static int32_t insertNode(Node **ppTopNode, Node *newNode, uint32_t * numberOfSt
                     newNode->parent = pNode;
                     newNode->level = pNode->level + 1;
                     //balance tree
-                    balanceTree(ppTopNode, pNode, LEFT_SIDE, true, numberOfSteps);
+                    balanceTree(pNode, LEFT_SIDE, true, numberOfSteps);
                     break;
                 }
             }
@@ -704,7 +749,7 @@ static int32_t insertNode(Node **ppTopNode, Node *newNode, uint32_t * numberOfSt
                     newNode->parent = pNode;
                     newNode->level = pNode->level + 1;
                     //balance tree
-                    balanceTree(ppTopNode, pNode, RIGHT_SIDE, true, numberOfSteps);
+                    balanceTree(pNode, RIGHT_SIDE, true, numberOfSteps);
                     break;
                 }
             }
@@ -725,21 +770,18 @@ static int32_t insertNode(Node **ppTopNode, Node *newNode, uint32_t * numberOfSt
     return ret;
 }
 
-static int32_t balanceTree(Node **ppTopNode, Node *pNode, uint8_t side, bool isNewNode, uint32_t * numberOfSteps) 
+static int32_t balanceTree(Node *pNode, uint8_t side, bool isNewNode, uint32_t * numberOfSteps) 
 { 
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
-        && pNode != NULL)
+    if (pNode != NULL)
     {
         bool exitLoop = false;
         Node *leftSide = NULL;
         Node *rightSide = NULL;
         Node *parent = NULL;
 
-        TREE_DEBUG("topnode->ID=%d pNode->ID=%d side=%d isNewNode=%d\n", 
-                   (*ppTopNode)->ID,
+        TREE_DEBUG("pNode->ID=%d side=%d isNewNode=%d\n", 
                    pNode->ID,
                    side,
                    isNewNode);
@@ -789,12 +831,12 @@ static int32_t balanceTree(Node **ppTopNode, Node *pNode, uint8_t side, bool isN
                 if(leftSide->FE == RIGHT_HEAVY)
                 {
                     //make double rotation to the right
-                    ret = DoubleRotationRight(ppTopNode, pNode);
+                    ret = DoubleRotationRight(pNode);
                 }
                 else // LEFT_HEAVY
                 {
                     //make a simple rotation to the right
-                    ret = SimpleRotationRight(ppTopNode, pNode);
+                    ret = SimpleRotationRight(pNode);
                 }
 
                 exitLoop = true; 
@@ -805,12 +847,12 @@ static int32_t balanceTree(Node **ppTopNode, Node *pNode, uint8_t side, bool isN
                 if(rightSide->FE == LEFT_HEAVY)
                 {
                     //make double rotation to the left
-                    ret = DoubleRotationLeft(ppTopNode, pNode);
+                    ret = DoubleRotationLeft(pNode);
                 }
                 else // RIGHT_HEAVY
                 {
                     //make a simple rotation to the left
-                    ret = SimpleRotationLeft(ppTopNode, pNode);
+                    ret = SimpleRotationLeft(pNode);
                 }
 
                 exitLoop = true; 
@@ -854,57 +896,45 @@ static int32_t balanceTree(Node **ppTopNode, Node *pNode, uint8_t side, bool isN
     return ret;
 }
 
-static int32_t SimpleRotationLeft(Node **ppTopNode, Node *pNode)
+/** 
+           Rotate to the left     
+ 
+      pNode->  5               7   
+                \             / \  
+                 7   -->>    5   6  
+                /                  
+               6                   
+**/ 
+static int32_t SimpleRotationLeft(Node *pNode)
 { 
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
-        && pNode != NULL
+    if (pNode != NULL
         && pNode->rightSide != NULL)
     {
         Node * parent = pNode->parent; 
         Node * rightSide = pNode->rightSide; 
-        Node * leftChildOfRightSide = rightSide->leftSide;
+        Node * rightLeftSide = rightSide->leftSide;
 
         TREE_DEBUG("pNode->ID=%d pNode->rightSide->ID=%d\n",
                    pNode->ID,
                    pNode->rightSide->ID);
         
-        if(parent != NULL) 
-        {
-            replaceNode(&pNode, rightSide);
-
-            //TODO Borrar este codigo
-            /*if(parent->rightSide == pNode) 
-            {
-                parent->rightSide = rightSide;
-            }
-            else
-            {
-                parent->leftSide = rightSide;
-            }*/
-        }
-        else
-        {
-            replaceNode(ppTopNode, rightSide);
-            //TODO Borrar este codigo
-            /* *ppTopNode = rightSide;*/
-        }
+        replaceNode(pNode, rightSide);
         
         // Rebuild tree
-        pNode->rightSide = leftChildOfRightSide; 
+        pNode->rightSide = rightLeftSide; 
         rightSide->leftSide = pNode; 
         
         // Reassign parents
         pNode->parent = rightSide; 
         
-        if(leftChildOfRightSide != NULL)
+        if(rightLeftSide != NULL)
         {
             TREE_DEBUG("pNode->rightSide->leftSide->ID=%d\n",
-                       leftChildOfRightSide->ID);
+                       rightLeftSide->ID);
 
-            leftChildOfRightSide->parent = pNode;
+            rightLeftSide->parent = pNode;
         }
 
         rightSide->parent = parent; 
@@ -922,57 +952,45 @@ static int32_t SimpleRotationLeft(Node **ppTopNode, Node *pNode)
     return ret;
 } 
 
-static int32_t SimpleRotationRight(Node **ppTopNode, Node *pNode) 
+/** 
+           Rotate to the right     
+ 
+      pNode->  5               3  
+              /               / \ 
+             3      -->>     4   5
+              \                   
+               4                  
+**/ 
+static int32_t SimpleRotationRight(Node *pNode) 
 { 
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
-        && pNode != NULL
+    if (pNode != NULL
         && pNode->leftSide != NULL)
     {
         Node *parent = pNode->parent; 
         Node *leftSide = pNode->leftSide; 
-        Node *rightChildOfLeftSide = leftSide->rightSide;  //pNode->leftSide->rightSide
+        Node *leftRightSide = leftSide->rightSide;  //pNode->leftSide->rightSide
         
         TREE_DEBUG("pNode->ID=%d pNode->leftSide->ID=%d\n",
                    pNode->ID,
                    pNode->leftSide->ID);
 
-        if(parent != NULL) 
-        {
-            replaceNode(&pNode, leftSide);
-            //TODO Borrar este codigo
-            /*
-            if(parent->rightSide == pNode) 
-            {
-                parent->rightSide = leftSide;
-            }
-            else
-            {
-                parent->leftSide = leftSide;
-            }*/
-        }
-        else
-        {
-            replaceNode(ppTopNode, leftSide);
-            //TODO Borrar este codigo
-            //*ppTopNode = leftSide;
-        }
+        replaceNode(pNode, leftSide);
         
         // Rebuild tree 
-        pNode->leftSide = rightChildOfLeftSide; 
+        pNode->leftSide = leftRightSide; 
         leftSide->rightSide = pNode;
         
         // Reassign parents
         pNode->parent = leftSide; 
         
-        if(rightChildOfLeftSide != NULL)
+        if(leftRightSide != NULL)
         {
             TREE_DEBUG("pNode->leftSide->rightSide->ID=%d\n",
-                       rightChildOfLeftSide->ID);
+                       leftRightSide->ID);
 
-            rightChildOfLeftSide->parent = pNode;
+            leftRightSide->parent = pNode;
         }
 
         //leftSide->parent = parent; 
@@ -990,76 +1008,65 @@ static int32_t SimpleRotationRight(Node **ppTopNode, Node *pNode)
     return ret;
 } 
 
-static int32_t DoubleRotationLeft(Node **ppTopNode, Node *pNode) 
+/** 
+           Double Rotation to the left     
+ 
+      pNode->  5                8          
+                \             /   \        
+                 10   -->>   5    10       
+                /             \   /        
+               8               6 9         
+              / \
+             6   9
+**/ 
+static int32_t DoubleRotationLeft(Node *pNode) 
 { 
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
-        && pNode != NULL
+    if (pNode != NULL
         && pNode->rightSide != NULL
         && pNode->rightSide->leftSide != NULL)
     {
         Node * parent = pNode->parent; 
         Node * rightSide = pNode->rightSide; 
-        Node * leftChildOfRightSide = rightSide->leftSide;                  //pNode->rightSide->leftSide
-        Node * leftLeftChildOfRightSide = leftChildOfRightSide->leftSide;   //pNode->rightSide->leftSide->leftSide
-        Node * leftRightChildOfRightSide = leftChildOfRightSide->rightSide; //pNode->rightSide->leftSide->rightSide
+        Node * rightLeftSide = rightSide->leftSide;                  //pNode->rightSide->leftSide
+        Node * rightLeftLeftSide = rightLeftSide->leftSide;          //pNode->rightSide->leftSide->leftSide
+        Node * rightLeftRightSide = rightLeftSide->rightSide;        //pNode->rightSide->leftSide->rightSide
         
         TREE_DEBUG("pNode->ID=%d pNode->rightSide->ID=%d pNode->rightSide->leftSide->ID=%d\n",
                    pNode->ID,
                    rightSide->ID,
-                   leftChildOfRightSide->leftSide->ID);
+                   rightLeftSide->leftSide->ID);
 
-        if(parent != NULL) 
-        {
-            replaceNode(&pNode, leftChildOfRightSide);
-            //TODO Borrar este codigo
-            /*
-            if(parent->rightSide == pNode) 
-            {
-                parent->rightSide = leftChildOfRightSide;
-            }
-            else 
-            {
-                parent->leftSide = leftChildOfRightSide;
-            }*/
-        }
-        else
-        {
-            replaceNode(ppTopNode, leftChildOfRightSide);
-            //TODO Borrar este codigo
-            /*
-            *ppTopNode = leftChildOfRightSide;*/
-        }
+        replaceNode(pNode, rightLeftSide);
         
         // Rebuild tree 
-        pNode->rightSide = leftLeftChildOfRightSide; 
-        rightSide->leftSide = leftRightChildOfRightSide; 
-        leftChildOfRightSide->leftSide = pNode; 
-        leftChildOfRightSide->rightSide = rightSide; 
+        pNode->rightSide = rightLeftLeftSide; 
+        rightSide->leftSide = rightLeftRightSide; 
+        rightLeftSide->leftSide = pNode; 
+        rightLeftSide->rightSide = rightSide; 
         
         // Reassign parents
-        leftChildOfRightSide->parent = parent;
-        pNode->parent = rightSide->parent = leftChildOfRightSide; 
+        rightLeftSide->parent = parent;
+        pNode->parent = rightSide->parent = rightLeftSide; 
         
-        if(leftLeftChildOfRightSide != NULL) 
+        if(rightLeftLeftSide != NULL) 
         {
             TREE_DEBUG("pNode->rightSide->leftSide->leftSide->ID=%d\n",
-                       leftLeftChildOfRightSide->ID);
+                       rightLeftLeftSide->ID);
 
-            leftLeftChildOfRightSide->parent = pNode;
+            rightLeftLeftSide->parent = pNode;
         }
-        if(leftRightChildOfRightSide != NULL) 
+        if(rightLeftRightSide != NULL) 
         {
             TREE_DEBUG("pNode->rightSide->leftSide->rightSide->ID=%d\n",
-                       leftRightChildOfRightSide->ID);
+                       rightLeftRightSide->ID);
 
-            leftRightChildOfRightSide->parent = rightSide;
+            rightLeftRightSide->parent = rightSide;
         }
         
         // adjust FE
-        switch(leftChildOfRightSide->FE) 
+        switch(rightLeftSide->FE) 
         {
             case LEFT_HEAVY:  pNode->FE = BALANCED; 
                               rightSide->FE = RIGHT_HEAVY; 
@@ -1072,7 +1079,7 @@ static int32_t DoubleRotationLeft(Node **ppTopNode, Node *pNode)
                           break; 
         } 
         
-        leftChildOfRightSide->FE = BALANCED; 
+        rightLeftSide->FE = BALANCED; 
     }
     else
     {
@@ -1083,76 +1090,65 @@ static int32_t DoubleRotationLeft(Node **ppTopNode, Node *pNode)
     return ret;
 } 
 
-static int32_t DoubleRotationRight(Node **ppTopNode, Node *pNode) 
+/** 
+           Double Rotation to the left     
+ 
+      pNode->  10                 8        
+              /                 /   \      
+             6      -->>       6    10     
+              \                 \  /       
+               8                7 9        
+              / \
+             7   9
+**/ 
+static int32_t DoubleRotationRight(Node *pNode) 
 { 
     int32_t ret = SUCCESS;
 
-    if (ppTopNode != NULL
-        && *ppTopNode != NULL
-        && pNode != NULL
+    if (pNode != NULL
         && pNode->leftSide != NULL
         && pNode->leftSide->rightSide != NULL)
     {
         Node * parent = pNode->parent; 
         Node * leftSide = pNode->leftSide;
-        Node * rightChildOfLeftSide = leftSide->rightSide;                   //pNode->leftSide->rightSide
-        Node * rightLeftChildOfLeftSide = rightChildOfLeftSide->leftSide;    //pNode->leftSide->rightSide->leftSide  
-        Node * rightRightChildOfLeftSide = rightChildOfLeftSide->rightSide;  //pNode->leftSide->rightSide->rightSide 
+        Node * leftRightSide = leftSide->rightSide;                   //pNode->leftSide->rightSide
+        Node * leftRightLeftSide = leftRightSide->leftSide;    //pNode->leftSide->rightSide->leftSide  
+        Node * leftRightRightSide = leftRightSide->rightSide;  //pNode->leftSide->rightSide->rightSide 
         
         TREE_DEBUG("pNode->ID=%d pNode->leftSide->ID=%d pNode->leftSide->rightSide->ID=%d\n",
                    pNode->ID,
                    leftSide->ID,
-                   rightChildOfLeftSide->ID);
+                   leftRightSide->ID);
 
-        if(parent != NULL) 
-        {
-            replaceNode(&pNode, rightChildOfLeftSide);
-            //TODO Borrar este codigo
-            /*
-            if(parent->rightSide == pNode)
-            {
-                parent->rightSide = rightChildOfLeftSide;
-            }
-            else 
-            {
-                parent->leftSide = rightChildOfLeftSide;
-            }*/
-        }
-        else
-        {
-            replaceNode(ppTopNode, rightChildOfLeftSide);
-            //TODO Borrar este codigo
-            /*
-            *ppTopNode = rightChildOfLeftSide; */
-        }
+        replaceNode(pNode, leftRightSide);
         
         // Rebuild tree 
-        leftSide->rightSide = rightLeftChildOfLeftSide; 
-        pNode->leftSide = rightRightChildOfLeftSide; 
-        rightChildOfLeftSide->leftSide = leftSide; 
-        rightChildOfLeftSide->rightSide = pNode; 
+        leftSide->rightSide = leftRightLeftSide; 
+        pNode->leftSide = leftRightRightSide; 
+        leftRightSide->leftSide = leftSide; 
+        leftRightSide->rightSide = pNode; 
         
         // Reassign parents
-        rightChildOfLeftSide->parent = parent; 
-        pNode->parent = leftSide->parent = rightChildOfLeftSide; 
+        leftRightSide->parent = parent; 
+        pNode->parent = leftSide->parent = leftRightSide; 
         
-        if(rightLeftChildOfLeftSide != NULL)
+        if(leftRightLeftSide != NULL)
         {
             TREE_DEBUG("pNode->leftSide->rightSide->leftSide->ID=%d\n",
-                       rightLeftChildOfLeftSide->ID);
+                       leftRightLeftSide->ID);
 
-            rightLeftChildOfLeftSide->parent = leftSide;
+            leftRightLeftSide->parent = leftSide;
         }
-        if(rightRightChildOfLeftSide != NULL)
+        if(leftRightRightSide != NULL)
         {
             TREE_DEBUG("pNode->leftSide->rightSide->rightSide->ID=%d\n",
-                       rightRightChildOfLeftSide->ID);
+                       leftRightRightSide->ID);
 
-            rightRightChildOfLeftSide->parent = pNode;
+            leftRightRightSide->parent = pNode;
         }
         
         // adjust FE
-        switch(rightChildOfLeftSide->FE) 
+        switch(leftRightSide->FE) 
         { 
             case LEFT_HEAVY:  leftSide->FE = BALANCED; 
                               pNode->FE = RIGHT_HEAVY; 
@@ -1165,7 +1161,7 @@ static int32_t DoubleRotationRight(Node **ppTopNode, Node *pNode)
                            break; 
         } 
         
-        rightChildOfLeftSide->FE = 0; 
+        leftRightSide->FE = BALANCED; 
     }
     else
     {
@@ -1271,7 +1267,10 @@ static int32_t createTree(Register *baseReg, Register *newReg, uint32_t * number
                 //set this flag to make sure that the memory of this register
                 //will be freed
                 newNode->needFreeReg = true;
-                ret = insertNode(&topTree, newNode, numberOfSteps);
+                ret = insertNode(topTree, newNode, numberOfSteps);
+
+                //adjust level
+                validateTree(getTopNode(newNode, NULL), NULL);
             }
             else
             {

@@ -585,7 +585,7 @@ int32_t changeFieldsOfReg(char * pFirstName,
                 default: break;
             }
 
-            repeat = repeatAction(STR_REPEAT_CHANGE_REG);
+            repeat = getYesOrNotFromConsole(STR_REPEAT_CHANGE_REG);
         }
         while (repeat);
 
