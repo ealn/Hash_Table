@@ -10,6 +10,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if (defined(_cplusplus) || defined(__cplusplus))
+extern "C" {
+#endif
+
 int32_t getUInt32FromConsole(const char *consoleStr);
 int32_t getInt32FromConsole(const char *consoleStr);
 uint16_t getUInt16FromConsole(const char *consoleStr);
@@ -30,3 +34,6 @@ uint8_t createMenuWithMultipleOptions(const char * title,
                                       int32_t upperLimit, 
                                       bool needCleanScreen);
 
+#if (defined(_cplusplus) || defined(__cplusplus))
+} // extern "C"
+#endif
