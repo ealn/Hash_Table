@@ -365,6 +365,7 @@ static void replaceNode(Node *pNode, Node *pNewNode)
         }
 
         pNewNode->level = pNode->level;
+        pNewNode->FE = pNode->FE;
 
         if (isTopNode(pNode))
         {
@@ -430,6 +431,10 @@ static int32_t removeLeaf(Node *pNode, uint32_t * numberOfSteps)
             if (parent != NULL)
             {
                 balanceTree(parent, side, false, numberOfSteps);
+
+                //adjust level
+                validateTree(getTopNode(parent, NULL), NULL);
+
             }
         }
         else
@@ -462,15 +467,18 @@ static int32_t removeTreeWithOneChild(Node *pNode, uint32_t * numberOfSteps)
                 && pNode->rightSide == NULL))
         {
             Node * child = NULL;
+            uint8_t side = 0;
 
             //if left child is not null
             if (pNode->leftSide != NULL)
             {
                 child = pNode->leftSide;
+                side = LEFT_SIDE;
             }
             else //else right child is not null
             {
                 child = pNode->rightSide;
+                side = RIGHT_SIDE;
             }
 
             replaceNode(pNode, child);
@@ -483,8 +491,10 @@ static int32_t removeTreeWithOneChild(Node *pNode, uint32_t * numberOfSteps)
 
             destroyNode(pNode); 
 
-            //adjust the level
-            validateTree(child, NULL);
+            balanceTree(child, side, false, numberOfSteps);
+
+            //adjust level
+            validateTree(getTopNode(child, NULL), NULL);
         }
         else
         {
@@ -519,6 +529,8 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
             Node *leftChild = NULL;
             Node *lastRightChild = NULL;
             Node *parentLastRightChild = NULL;
+            Node *pNodeToBalance = NULL;
+            uint8_t side = 0;
 
             rightChild = pNode->rightSide;
             leftChild = pNode->leftSide;
@@ -534,6 +546,8 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
                 replaceNode(pNode, lastRightChild);
                 lastRightChild->rightSide = rightChild;
                 rightChild->parent = lastRightChild;
+                side = LEFT_SIDE;
+                pNodeToBalance = leftChild;
             }
             else
             {
@@ -556,9 +570,16 @@ static int32_t removeTreeWithTwoChilds(Node *pNode, uint32_t * numberOfSteps)
                 lastRightChild->rightSide = rightChild;
                 leftChild->parent = lastRightChild;
                 rightChild->parent = lastRightChild;
+                side = RIGHT_SIDE;
+                pNodeToBalance = parentLastRightChild;
             }
 
             destroyNode(pNode); 
+
+            balanceTree(pNodeToBalance, side, false, numberOfSteps); 
+
+            //adjust level
+            validateTree(getTopNode(lastRightChild, NULL), NULL);
         }
         else
         {
